@@ -25,7 +25,7 @@ bun install
 ### Running the Server
 
 ```bash
-bun run start
+bun run src/index.ts
 ```
 
 The server will start and listen for MCP protocol messages over stdio.
@@ -398,7 +398,7 @@ MIT
 ## Acknowledgments
 
 Built with:
-- [Rosetta MCP Framework](https://github.com/example/rosetta)
+- [Rosetta MCP Framework](https://github.com/jared-goguen/rosetta)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [TypeScript](https://www.typescriptlang.org/)
