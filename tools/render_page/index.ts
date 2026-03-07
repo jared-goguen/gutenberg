@@ -1,6 +1,6 @@
 import { parseSchema } from "../../src/parser.js";
 import { normalizeSection } from "../../src/parser.js";
-import { renderSection } from "../../src/components/index.js";
+import { renderSections } from "../../src/components/index.js";
 import { applyLayout } from "../../src/templates/layouts.js";
 import { renderDocument } from "../../src/templates/base.js";
 import { resolveTheme, defaultTheme } from "../../src/theme.js";
@@ -24,10 +24,11 @@ export async function renderPage(input: {
     theme: resolvedTheme,
   };
 
-  const sectionsHTML = page.page.sections
-    .map(normalizeSection)
-    .map(section => renderSection(section, options))
-    .join("\n");
+  // Normalize all sections first
+  const normalizedSections = page.page.sections.map(normalizeSection);
+
+  // Render with semantic context (handles prev/next relationships)
+  const sectionsHTML = renderSections(normalizedSections, options);
 
   const body = applyLayout(sectionsHTML, page.page.layout, resolvedTheme);
 

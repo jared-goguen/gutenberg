@@ -1,175 +1,232 @@
+/**
+ * Hero Section — Semantic-first rendering
+ * Completely rewritten to use SemanticStyles
+ */
+
 import { HeroSection, RenderOptions, CTA } from "../types.js";
+import { SemanticStyles } from "../semantic.js";
+import {
+  renderHeading,
+  renderParagraph,
+  renderButton,
+  renderContainer,
+} from "../primitives.js";
 import { escapeHTML } from "../renderer.js";
-import { renderSection } from "../templates/base.js";
-import { defaultThemeSpec } from "../theme.js";
 
 /**
- * Render a hero section
+ * Main hero renderer - dispatches to variant renderers
  */
-export function renderHero(section: HeroSection, options: RenderOptions = {}): string {
+export function renderHero(
+  section: HeroSection,
+  styles: SemanticStyles,
+  options: RenderOptions = {}
+): string {
   const variant = section.variant || "centered";
-  const theme = options.theme || defaultThemeSpec;
 
   switch (variant) {
     case "centered":
-      return renderHeroCentered(section, options, theme);
+      return renderHeroCentered(section, styles, options);
     case "split":
-      return renderHeroSplit(section, options, theme);
+      return renderHeroSplit(section, styles, options);
     case "full-bleed":
-      return renderHeroFullBleed(section, options, theme);
+      return renderHeroFullBleed(section, styles, options);
     default:
-      return renderHeroCentered(section, options, theme);
+      return renderHeroCentered(section, styles, options);
   }
 }
 
 /**
- * Centered hero variant
+ * Centered Hero
+ * Text and CTAs centered, optional image below
  */
-function renderHeroCentered(section: HeroSection, options: RenderOptions, theme: any): string {
+function renderHeroCentered(
+  section: HeroSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const { content } = section;
-  const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
+  const ctas = Array.isArray(content.cta)
+    ? content.cta
+    : content.cta
+      ? [content.cta]
+      : [];
 
-  const heroContent = `
+  // Build inner content
+  const heading = renderHeading(content.heading, 1, styles, {
+    id: section.id ? `${section.id}-heading` : undefined,
+  });
+
+  const subheading = content.subheading
+    ? `<p class="${styles.typography.body} ${styles.colors.text} text-xl md:text-2xl mb-8">${escapeHTML(content.subheading)}</p>`
+    : "";
+
+  const description = content.description
+    ? renderParagraph(content.description, styles, "lead")
+    : "";
+
+  const ctaButtons = ctas.length
+    ? `<div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+        ${ctas.map((cta) => renderButton(cta, styles, "primary")).join("\n")}
+      </div>`
+    : "";
+
+  const image = content.image
+    ? `<div class="mt-16 rounded-lg overflow-hidden ${styles.emphasis.shadow}">
+        <img src="${escapeHTML(content.image)}" alt="${escapeHTML(content.heading)}" class="w-full h-auto" />
+      </div>`
+    : "";
+
+  const innerContent = `
     <div class="text-center max-w-4xl mx-auto">
-      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-        ${escapeHTML(content.heading)}
-      </h1>
-      ${content.subheading ? `
-      <p class="text-xl md:text-2xl text-muted mb-8">
-        ${escapeHTML(content.subheading)}
-      </p>
-      ` : ""}
-      ${content.description ? `
-      <p class="text-lg text-muted mb-10 max-w-2xl mx-auto">
-        ${escapeHTML(content.description)}
-      </p>
-      ` : ""}
-      ${ctas.length > 0 ? `
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        ${ctas.map(cta => renderCTAButton(cta, theme)).join("\n")}
-      </div>
-      ` : ""}
-      ${content.image ? `
-      <div class="mt-12">
-        <img src="${escapeHTML(content.image)}" alt="${escapeHTML(content.heading)}" class="rounded-lg shadow-2xl mx-auto" />
-      </div>
-      ` : ""}
+      ${heading}
+      ${subheading}
+      ${description}
+      ${ctaButtons}
+      ${image}
     </div>
-  `;
+  `.trim();
 
-  return renderSection(heroContent, {
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "xl",
-    theme,
+    maxWidth: "max-w-6xl",
   });
 }
 
 /**
- * Split hero variant (text on one side, image on other)
+ * Split Hero
+ * Text on left, image on right (2-column grid)
  */
-function renderHeroSplit(section: HeroSection, options: RenderOptions, theme: any): string {
+function renderHeroSplit(
+  section: HeroSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const { content } = section;
-  const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
+  const ctas = Array.isArray(content.cta)
+    ? content.cta
+    : content.cta
+      ? [content.cta]
+      : [];
 
-  const heroContent = `
+  const heading = renderHeading(content.heading, 1, styles);
+  const subheading = content.subheading
+    ? `<p class="${styles.typography.body} ${styles.colors.text} text-xl mb-6">${escapeHTML(content.subheading)}</p>`
+    : "";
+  const description = content.description
+    ? renderParagraph(content.description, styles, "body")
+    : "";
+
+  const ctaButtons = ctas.length
+    ? `<div class="flex flex-col sm:flex-row gap-4 mt-8">
+        ${ctas.map((cta) => renderButton(cta, styles, "primary")).join("\n")}
+      </div>`
+    : "";
+
+  const textColumn = `
+    <div>
+      ${heading}
+      ${subheading}
+      ${description}
+      ${ctaButtons}
+    </div>
+  `.trim();
+
+  const imageColumn = content.image
+    ? `<div class="rounded-lg overflow-hidden ${styles.emphasis.shadow}">
+        <img src="${escapeHTML(content.image)}" alt="${escapeHTML(content.heading)}" class="w-full h-auto" />
+      </div>`
+    : "";
+
+  const innerContent = `
     <div class="grid md:grid-cols-2 gap-12 items-center">
-      <div>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-          ${escapeHTML(content.heading)}
-        </h1>
-        ${content.subheading ? `
-        <p class="text-xl text-muted mb-6">
-          ${escapeHTML(content.subheading)}
-        </p>
-        ` : ""}
-        ${content.description ? `
-        <p class="text-lg text-muted mb-8">
-          ${escapeHTML(content.description)}
-        </p>
-        ` : ""}
-        ${ctas.length > 0 ? `
-        <div class="flex flex-col sm:flex-row gap-4">
-          ${ctas.map(cta => renderCTAButton(cta, theme)).join("\n")}
-        </div>
-        ` : ""}
-      </div>
-      ${content.image ? `
-      <div>
-        <img src="${escapeHTML(content.image)}" alt="${escapeHTML(content.heading)}" class="rounded-lg shadow-xl w-full" />
-      </div>
-      ` : ""}
+      ${textColumn}
+      ${imageColumn}
     </div>
-  `;
+  `.trim();
 
-  return renderSection(heroContent, {
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "xl",
-    theme,
+    maxWidth: "max-w-6xl",
   });
 }
 
 /**
- * Full-bleed hero variant (background image with overlay)
+ * Full-Bleed Hero
+ * Background image with overlay, text and CTAs centered over it
  */
-function renderHeroFullBleed(section: HeroSection, options: RenderOptions, theme: any): string {
+function renderHeroFullBleed(
+  section: HeroSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const { content } = section;
-  const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
+  const ctas = Array.isArray(content.cta)
+    ? content.cta
+    : content.cta
+      ? [content.cta]
+      : [];
 
-  const heroContent = `
-    <div class="relative min-h-screen flex items-center justify-center ${content.backgroundImage ? 'bg-cover bg-center' : 'bg-gradient-to-br from-blue-500 to-purple-600'}" ${content.backgroundImage ? `style="background-image: url('${escapeHTML(content.backgroundImage)}');"` : ''}>
-      <div class="absolute inset-0 bg-black bg-opacity-40"></div>
-      <div class="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-        <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-          ${escapeHTML(content.heading)}
-        </h1>
-        ${content.subheading ? `
-        <p class="text-2xl md:text-3xl mb-8 text-gray-100">
-          ${escapeHTML(content.subheading)}
-        </p>
-        ` : ""}
-        ${content.description ? `
-        <p class="text-xl mb-10 text-gray-200 max-w-2xl mx-auto">
-          ${escapeHTML(content.description)}
-        </p>
-        ` : ""}
-        ${ctas.length > 0 ? `
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          ${ctas.map(cta => renderCTAButton(cta, theme, true)).join("\n")}
-        </div>
-        ` : ""}
+  // For full-bleed, use white text over dark background
+  const textColorClass = "text-white";
+  const mutedColorClass = "text-gray-200";
+
+  const backgroundStyle = content.backgroundImage
+    ? `background-image: url('${escapeHTML(content.backgroundImage)}');`
+    : "";
+
+  const heading = `<h1 class="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 ${textColorClass}">
+    ${escapeHTML(content.heading)}
+  </h1>`;
+
+  const subheading = content.subheading
+    ? `<p class="text-2xl md:text-3xl mb-8 ${mutedColorClass}">
+        ${escapeHTML(content.subheading)}
+      </p>`
+    : "";
+
+  const description = content.description
+    ? `<p class="text-xl mb-10 ${mutedColorClass} max-w-2xl mx-auto">
+        ${escapeHTML(content.description)}
+      </p>`
+    : "";
+
+  const ctaButtons = ctas.length
+    ? `<div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
+        ${ctas.map((cta) => renderFullBleedButton(cta)).join("\n")}
+      </div>`
+    : "";
+
+  const innerContent = `
+    <div class="relative min-h-screen bg-cover bg-center flex items-center justify-center ${content.backgroundImage ? "bg-cover" : "bg-gradient-to-br from-primary-600 to-primary-900"}"
+         ${backgroundStyle ? `style="${backgroundStyle}"` : ""}>
+      <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div class="relative z-10 text-center max-w-4xl mx-auto px-4">
+        ${heading}
+        ${subheading}
+        ${description}
+        ${ctaButtons}
       </div>
     </div>
-  `;
+  `.trim();
 
-  return renderSection(heroContent, {
-    id: section.id,
-    spacing: "none",
-    theme,
-  });
+  // Don't use renderContainer for full-bleed, just return the inner div
+  return innerContent;
 }
 
 /**
- * Render a CTA button
+ * Render a CTA button styled for full-bleed (white/contrasting)
  */
-function renderCTAButton(cta: CTA, theme: any, onDark: boolean = false): string {
+function renderFullBleedButton(cta: CTA): string {
   const variant = cta.variant || "primary";
-  
   const variantClasses = {
-    primary: onDark 
-      ? "bg-white text-gray-900 hover:bg-gray-100" 
-      : "bg-primary text-inverse hover:opacity-90",
-    secondary: onDark
-      ? "bg-gray-800 text-white hover:bg-gray-700"
-      : "bg-gray-800 text-white hover:bg-gray-900",
-    outline: onDark
-      ? "border-2 border-white text-white hover:bg-white hover:text-gray-900"
-      : "border-2 border-default text-default hover:bg-default hover:text-inverse",
-    ghost: onDark
-      ? "text-white hover:bg-white hover:bg-opacity-10"
-      : "text-default hover:bg-subtle",
+    primary: "bg-white text-gray-900 hover:bg-gray-100",
+    secondary: "bg-gray-800 text-white hover:bg-gray-700 border-2 border-gray-800",
+    outline:
+      "border-2 border-white text-white hover:bg-white hover:text-gray-900",
+    ghost: "text-white hover:bg-white hover:bg-opacity-10",
   };
 
-  const classes = `inline-flex items-center justify-center px-8 py-3 text-base font-medium ${theme.radius.button} transition-colors ${variantClasses[variant]}`;
+  const classes = `inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg transition-colors ${variantClasses[variant]}`;
 
   return `<a href="${escapeHTML(cta.href)}" class="${classes}">${escapeHTML(cta.text)}</a>`;
 }

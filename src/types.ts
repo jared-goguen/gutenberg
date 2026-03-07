@@ -179,3 +179,10 @@ export interface HTMLNode {
   children?: (HTMLNode | string)[];
   selfClosing?: boolean;
 }
+
+// Semantic Axes Type Aliases
+
+export type Vibe = "serene" | "gentle" | "steady" | "vibrant" | "intense" | "urgent";
+export type Intent = "engage" | "inform" | "persuade" | "direct";
+export type Narrative = "exposition" | "inciting" | "rising" | "climax" | "falling" | "resolution";
+export type Cohesion = "opens" | "continues" | "amplifies" | "supports" | "contrasts" | "pivots" | "echoes" | "resolves" | "closes";

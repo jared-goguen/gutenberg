@@ -1,161 +1,263 @@
+/**
+ * Footer Section — Semantic-aware footer
+ * Structural component with light semantic integration
+ */
+
 import { FooterSection, RenderOptions } from "../types.js";
+import { SemanticStyles } from "../semantic.js";
 import { escapeHTML } from "../renderer.js";
-import { renderSection } from "../templates/base.js";
-import { defaultThemeSpec } from "../theme.js";
+import { renderContainer } from "../primitives.js";
 
 /**
- * Render a footer section
+ * Main footer renderer - dispatches to variant renderers
  */
-export function renderFooter(section: FooterSection, options: RenderOptions = {}): string {
+export function renderFooter(
+  section: FooterSection,
+  styles: SemanticStyles,
+  options: RenderOptions = {}
+): string {
   const variant = section.variant || "simple";
-  const theme = options.theme || defaultThemeSpec;
 
   switch (variant) {
     case "simple":
-      return renderFooterSimple(section, options, theme);
+      return renderFooterSimple(section, styles, options);
     case "detailed":
-      return renderFooterDetailed(section, options, theme);
+      return renderFooterDetailed(section, styles, options);
     case "newsletter":
-      return renderFooterNewsletter(section, options, theme);
+      return renderFooterNewsletter(section, styles, options);
     default:
-      return renderFooterSimple(section, options, theme);
+      return renderFooterSimple(section, styles, options);
   }
 }
 
-function renderFooterSimple(section: FooterSection, options: RenderOptions, theme: any): string {
-  const tone = section.tone || "light";
-  
-  const logo = section.logo ? `
-    <div class="flex items-center gap-2">
-      ${section.logo.image ? `<img src="${escapeHTML(section.logo.image)}" alt="Logo" class="h-8" />` : ""}
-      ${section.logo.text ? `<span class="text-xl font-bold">${escapeHTML(section.logo.text)}</span>` : ""}
-    </div>
-  ` : "";
+/**
+ * Simple footer: logo, social links, copyright
+ */
+function renderFooterSimple(
+  section: FooterSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
+  const logo = renderLogo(section, styles);
+  const social = section.social ? renderSocialLinks(section.social, styles) : "";
 
-  const social = section.social ? renderSocialLinks(section.social, theme) : "";
+  const copyrightHTML = section.copyright
+    ? `
+      <div class="mt-8 pt-8 border-t ${styles.colors.border} text-center">
+        <p class="${styles.colors.textMuted} text-sm">${escapeHTML(section.copyright)}</p>
+      </div>
+    `.trim()
+    : "";
 
-  const content = `
+  const innerContent = `
     <div class="flex flex-col md:flex-row items-center justify-between gap-6">
       ${logo}
       ${social}
     </div>
-    ${section.copyright ? `
-    <div class="mt-8 pt-8 border-t border-default text-center text-muted">
-      <p>${escapeHTML(section.copyright)}</p>
-    </div>
-    ` : ""}
-  `;
+    ${copyrightHTML}
+  `
+    .trim();
 
-  return renderSection(content, {
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "lg",
-    theme,
-    tone,
+    maxWidth: "max-w-6xl",
   });
 }
 
-function renderFooterDetailed(section: FooterSection, options: RenderOptions, theme: any): string {
-  const tone = section.tone || "light";
-  
-  const logo = section.logo ? `
-    <div>
-      <div class="flex items-center gap-2 mb-4">
-        ${section.logo.image ? `<img src="${escapeHTML(section.logo.image)}" alt="Logo" class="h-8" />` : ""}
-        ${section.logo.text ? `<span class="text-xl font-bold">${escapeHTML(section.logo.text)}</span>` : ""}
+/**
+ * Detailed footer: logo + description, link groups, social media
+ */
+function renderFooterDetailed(
+  section: FooterSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
+  const logo = renderLogo(section, styles);
+
+  const linkGroups = section.links
+    ? section.links
+        .map(
+          (group) => `
+      <div>
+        <h3 class="${styles.colors.text} font-semibold mb-4 text-sm">${escapeHTML(group.heading)}</h3>
+        <ul class="space-y-2">
+          ${group.links
+            .map(
+              (link) => `
+            <li>
+              <a href="${escapeHTML(link.href)}" class="${styles.interactive.link} hover:underline text-sm">
+                ${escapeHTML(link.text)}
+              </a>
+            </li>
+          `
+            )
+            .join("")}
+        </ul>
       </div>
-      ${section.description ? `<p class="text-muted max-w-xs">${escapeHTML(section.description)}</p>` : ""}
-    </div>
-  ` : "";
+    `
+        )
+        .join("")
+    : "";
 
-  const linkGroups = section.links ? section.links.map(group => `
-    <div>
-      <h3 class="font-semibold mb-4">${escapeHTML(group.heading)}</h3>
-      <ul class="space-y-2">
-        ${group.links.map(link => `
-          <li>
-            <a href="${escapeHTML(link.href)}" class="text-muted hover:text-default transition-colors">
-              ${escapeHTML(link.text)}
-            </a>
-          </li>
-        `).join("")}
-      </ul>
-    </div>
-  `).join("") : "";
+  const social = section.social
+    ? `
+      <div>
+        <h3 class="${styles.colors.text} font-semibold mb-4 text-sm">Follow Us</h3>
+        ${renderSocialLinks(section.social, styles)}
+      </div>
+    `
+    : "";
 
-  const social = section.social ? `
-    <div>
-      <h3 class="font-semibold mb-4">Follow Us</h3>
-      ${renderSocialLinks(section.social, theme)}
-    </div>
-  ` : "";
+  const copyrightHTML = section.copyright
+    ? `
+      <div class="pt-8 border-t ${styles.colors.border} text-center">
+        <p class="${styles.colors.textMuted} text-sm">${escapeHTML(section.copyright)}</p>
+      </div>
+    `.trim()
+    : "";
 
-  const content = `
+  const innerContent = `
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
       ${logo}
       ${linkGroups}
       ${social}
     </div>
-    ${section.copyright ? `
-    <div class="pt-8 border-t border-default text-center text-muted">
-      <p>${escapeHTML(section.copyright)}</p>
-    </div>
-    ` : ""}
-  `;
+    ${copyrightHTML}
+  `
+    .trim();
 
-  return renderSection(content, {
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "xl",
-    theme,
-    tone,
+    maxWidth: "max-w-6xl",
   });
 }
 
-function renderFooterNewsletter(section: FooterSection, options: RenderOptions, theme: any): string {
-  const tone = section.tone || "light";
-  
-  const content = `
-    <div class="max-w-2xl mx-auto text-center mb-8">
-      <h2 class="text-2xl font-bold mb-4">Subscribe to our newsletter</h2>
-      ${section.description ? `<p class="text-muted mb-6">${escapeHTML(section.description)}</p>` : ""}
-      <form class="flex gap-2 max-w-md mx-auto">
-        <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-2 border border-default ${theme.radius.card} focus:outline-none focus:ring-2 focus:ring-primary" />
-        <button type="submit" class="bg-primary text-inverse px-6 py-2 ${theme.radius.button} hover:opacity-90 transition-opacity">
+/**
+ * Newsletter footer: CTA for email signup + links
+ */
+function renderFooterNewsletter(
+  section: FooterSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
+  const logo = renderLogo(section, styles);
+
+  const newsletter = `
+    <div class="bg-opacity-50 ${styles.container.background} p-8 rounded-lg">
+      <h3 class="${styles.colors.text} font-semibold mb-2">Subscribe to our newsletter</h3>
+      <p class="${styles.colors.textMuted} text-sm mb-4">${section.description || "Get updates delivered to your inbox"}</p>
+      <form class="flex gap-2">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          class="flex-1 px-4 py-2 rounded-lg border ${styles.colors.border} text-sm"
+          required
+        />
+        <button type="submit" class="${styles.interactive.buttonPrimary} px-4 py-2 rounded-lg text-sm font-medium">
           Subscribe
         </button>
       </form>
     </div>
-    ${section.copyright ? `
-    <div class="pt-8 border-t border-default text-center text-muted">
-      <p>${escapeHTML(section.copyright)}</p>
-    </div>
-    ` : ""}
-  `;
+  `.trim();
 
-  return renderSection(content, {
+  const linkGroups = section.links
+    ? section.links
+        .map(
+          (group) => `
+      <div>
+        <h3 class="${styles.colors.text} font-semibold mb-4 text-sm">${escapeHTML(group.heading)}</h3>
+        <ul class="space-y-2">
+          ${group.links
+            .map(
+              (link) => `
+            <li>
+              <a href="${escapeHTML(link.href)}" class="${styles.interactive.link} hover:underline text-sm">
+                ${escapeHTML(link.text)}
+              </a>
+            </li>
+          `
+            )
+            .join("")}
+        </ul>
+      </div>
+    `
+        )
+        .join("")
+    : "";
+
+  const copyrightHTML = section.copyright
+    ? `
+      <div class="pt-8 border-t ${styles.colors.border} text-center">
+        <p class="${styles.colors.textMuted} text-sm">${escapeHTML(section.copyright)}</p>
+      </div>
+    `.trim()
+    : "";
+
+  const innerContent = `
+    <div class="grid md:grid-cols-2 gap-8 mb-8">
+      ${newsletter}
+      <div class="grid md:grid-cols-2 gap-8">
+        ${linkGroups}
+      </div>
+    </div>
+    ${copyrightHTML}
+  `
+    .trim();
+
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "lg",
-    theme,
-    tone,
+    maxWidth: "max-w-6xl",
   });
 }
 
-function renderSocialLinks(social: any[], theme: any): string {
-  const icons: Record<string, string> = {
+/**
+ * Render footer logo
+ */
+function renderLogo(section: FooterSection, styles: SemanticStyles): string {
+  const logo = section.logo;
+
+  if (!logo) {
+    return "";
+  }
+
+  return `
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        ${logo.image ? `<img src="${escapeHTML(logo.image)}" alt="Logo" class="h-8 w-auto" />` : ""}
+        ${logo.text ? `<span class="${styles.colors.text} text-lg font-bold">${escapeHTML(logo.text)}</span>` : ""}
+      </div>
+      ${section.description ? `<p class="${styles.colors.textMuted} text-sm max-w-xs">${escapeHTML(section.description)}</p>` : ""}
+    </div>
+  `;
+}
+
+/**
+ * Render social media links
+ */
+function renderSocialLinks(
+  social: any[],
+  styles: SemanticStyles
+): string {
+  const iconMap: Record<string, string> = {
     twitter: "𝕏",
     facebook: "f",
     linkedin: "in",
-    github: "GitHub",
+    github: "⚙",
     youtube: "▶",
     instagram: "📷",
   };
 
   return `
     <div class="flex gap-4">
-      ${social.map(link => `
-        <a href="${escapeHTML(link.href)}" class="w-10 h-10 bg-feature hover:border-default ${theme.radius.button} flex items-center justify-center transition-colors" aria-label="${link.platform}">
-          ${icons[link.platform] || link.platform[0].toUpperCase()}
+      ${social
+        .map(
+          (link) => `
+        <a href="${escapeHTML(link.href)}" class="${styles.interactive.link} hover:opacity-70 transition-opacity" aria-label="${escapeHTML(link.platform)}">
+          <span class="text-lg">${iconMap[link.platform] || link.platform}</span>
         </a>
-      `).join("")}
+      `
+        )
+        .join("")}
     </div>
   `;
 }

@@ -1,22 +1,27 @@
-import { renderSection } from "../../src/components/index.js";
+import { renderSectionWithoutContext } from "../../src/components/index.js";
 import { renderDocument } from "../../src/templates/base.js";
 import { RenderOptions } from "../../src/types.js";
+import { resolveTheme } from "../../src/theme.js";
 
 export async function previewComponent(input: {
   section: Record<string, any>;
   options?: RenderOptions;
 }) {
   try {
+    // Resolve theme
+    const resolvedTheme = resolveTheme(input.options?.theme);
+
     // Render options
     const options: RenderOptions = {
       minify: input.options?.minify || false,
       includeComments: input.options?.includeComments !== false,
       tailwindCDN: input.options?.tailwindCDN !== false,
       indentSize: input.options?.indentSize || 2,
+      theme: resolvedTheme,
     };
 
-    // Render the section
-    const sectionHTML = renderSection(input.section, options);
+    // Render the section (without page context - uses defaults for semantic axes)
+    const sectionHTML = renderSectionWithoutContext(input.section, options);
 
     // Wrap in a minimal document for preview
     const html = renderDocument(

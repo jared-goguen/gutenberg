@@ -1,4 +1,5 @@
 import { Section, RenderOptions, ComponentType } from "../types.js";
+import { SemanticStyles, SemanticContext, resolveSemanticStyles } from "../semantic.js";
 import { renderHero } from "./hero.js";
 import { renderFeatures } from "./features.js";
 import { renderContent } from "./content.js";
@@ -8,8 +9,12 @@ import { renderFooter } from "./footer.js";
 
 /**
  * Component registry mapping types to renderers
+ * Now accepts both section and semantic styles
  */
-const componentRenderers: Record<ComponentType, (section: any, options: RenderOptions) => string> = {
+const componentRenderers: Record<
+  ComponentType,
+  (section: any, styles: SemanticStyles, options: RenderOptions) => string
+> = {
   hero: renderHero,
   features: renderFeatures,
   content: renderContent,
@@ -19,23 +24,76 @@ const componentRenderers: Record<ComponentType, (section: any, options: RenderOp
 };
 
 /**
- * Render a section based on its type
+ * Render a section based on its type with semantic styles
+ * This is the main entry point that computes semantic context
  */
-export function renderSection(section: Section, options: RenderOptions = {}): string {
+export function renderSection(
+  section: Section,
+  styles: SemanticStyles,
+  options: RenderOptions = {}
+): string {
   const renderer = componentRenderers[section.type];
-  
+
   if (!renderer) {
     throw new Error(`Unknown component type: ${section.type}`);
   }
 
-  const html = renderer(section, options);
+  const html = renderer(section, styles, options);
 
   if (options.includeComments !== false) {
     const label = section.id ? `${section.type}#${section.id}` : section.type;
-    return `<!-- section: ${label} -->\n${html}`;
+    return `<!-- section: ${label} (vibe: ${styles.metadata.vibe}, intent: ${styles.metadata.intent}, narrative: ${styles.metadata.narrative}, cohesion: ${styles.metadata.cohesion}) -->\n${html}`;
   }
 
   return html;
+}
+
+/**
+ * Legacy wrapper: render a single section without context
+ * Useful for preview/snapshot tools that render individual sections
+ */
+export function renderSectionWithoutContext(
+  section: Section,
+  options: RenderOptions = {}
+): string {
+  const ctx: SemanticContext = {
+    section,
+    prev: undefined,
+    next: undefined,
+    position: 0,
+    totalSections: 1,
+    isFirst: true,
+    isLast: true,
+  };
+
+  const styles = resolveSemanticStyles(ctx, options.theme!);
+  return renderSection(section, styles, options);
+}
+
+/**
+ * Render all sections of a page with semantic context
+ * This is called from tools/render_page to handle the full page
+ */
+export function renderSections(
+  sections: Section[],
+  options: RenderOptions = {}
+): string {
+  return sections
+    .map((section, index) => {
+      const ctx: SemanticContext = {
+        section,
+        prev: sections[index - 1],
+        next: sections[index + 1],
+        position: index,
+        totalSections: sections.length,
+        isFirst: index === 0,
+        isLast: index === sections.length - 1,
+      };
+
+      const styles = resolveSemanticStyles(ctx, options.theme!);
+      return renderSection(section, styles, options);
+    })
+    .join("\n");
 }
 
 /**

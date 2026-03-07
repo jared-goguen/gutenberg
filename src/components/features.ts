@@ -1,71 +1,183 @@
+/**
+ * Features Section — Semantic-first rendering
+ * Grid layouts for showcasing feature items with icons and descriptions
+ */
+
 import { FeaturesSection, RenderOptions } from "../types.js";
+import { SemanticStyles } from "../semantic.js";
+import {
+  renderHeading,
+  renderGrid,
+  renderContainer,
+} from "../primitives.js";
 import { escapeHTML } from "../renderer.js";
-import { renderSection } from "../templates/base.js";
-import { defaultThemeSpec } from "../theme.js";
 
 /**
- * Render a features section
+ * Main features renderer - dispatches to variant renderers
  */
-export function renderFeatures(section: FeaturesSection, options: RenderOptions = {}): string {
+export function renderFeatures(
+  section: FeaturesSection,
+  styles: SemanticStyles,
+  options: RenderOptions = {}
+): string {
   const variant = section.variant || "grid-3";
-  const theme = options.theme || defaultThemeSpec;
 
-  const content = `
-    ${section.heading || section.subheading ? `
-    <div class="text-center mb-12">
-      ${section.heading ? `<h2 class="text-3xl md:text-4xl font-bold mb-4">${escapeHTML(section.heading)}</h2>` : ""}
-      ${section.subheading ? `<p class="text-xl text-muted max-w-2xl mx-auto">${escapeHTML(section.subheading)}</p>` : ""}
+  switch (variant) {
+    case "grid-2":
+      return renderFeaturesGrid(section, styles, 2, options);
+    case "grid-3":
+      return renderFeaturesGrid(section, styles, 3, options);
+    case "grid-4":
+      return renderFeaturesGrid(section, styles, 4, options);
+    case "list":
+      return renderFeaturesList(section, styles, options);
+    default:
+      return renderFeaturesGrid(section, styles, 3, options);
+  }
+}
+
+/**
+ * Grid layout for features
+ */
+function renderFeaturesGrid(
+  section: FeaturesSection,
+  styles: SemanticStyles,
+  columns: 2 | 3 | 4,
+  options: RenderOptions
+): string {
+  // Header section (if heading/subheading provided)
+  const header = section.heading || section.subheading
+    ? `
+      <div class="text-center mb-16">
+        ${section.heading ? renderHeading(section.heading, 2, styles) : ""}
+        ${
+          section.subheading
+            ? `<p class="${styles.colors.textMuted} text-lg mt-4 max-w-2xl mx-auto">${escapeHTML(section.subheading)}</p>`
+            : ""
+        }
+      </div>
+    `.trim()
+    : "";
+
+  // Grid of feature items
+  const gridColsClass = {
+    2: "grid-cols-1 md:grid-cols-2",
+    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4",
+  };
+
+  const items = section.items
+    .map((item) => renderFeatureItem(item, styles))
+    .join("\n");
+
+  const gridContent = `
+    <div class="grid ${gridColsClass[columns]} gap-8">
+      ${items}
     </div>
-    ` : ""}
-    
-    ${renderFeaturesGrid(section, variant, theme)}
-  `;
+  `.trim();
 
-  return renderSection(content, {
+  const innerContent = `
+    ${header}
+    ${gridContent}
+  `
+    .trim();
+
+  return renderContainer(innerContent, styles, {
     id: section.id,
-    spacing: "lg",
-    theme,
+    maxWidth: "max-w-6xl",
   });
 }
 
-function renderFeaturesGrid(section: FeaturesSection, variant: string, theme: any): string {
-  const gridClasses = {
-    "grid-2": "grid md:grid-cols-2 gap-8",
-    "grid-3": "grid md:grid-cols-2 lg:grid-cols-3 gap-8",
-    "grid-4": "grid md:grid-cols-2 lg:grid-cols-4 gap-6",
-    "list": "space-y-8 max-w-3xl mx-auto",
-  };
+/**
+ * List layout for features (vertical stack with icons on left)
+ */
+function renderFeaturesList(
+  section: FeaturesSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
+  // Header section
+  const header = section.heading || section.subheading
+    ? `
+      <div class="text-center mb-16">
+        ${section.heading ? renderHeading(section.heading, 2, styles) : ""}
+        ${
+          section.subheading
+            ? `<p class="${styles.colors.textMuted} text-lg mt-4">${escapeHTML(section.subheading)}</p>`
+            : ""
+        }
+      </div>
+    `.trim()
+    : "";
 
-  const gridClass = gridClasses[variant as keyof typeof gridClasses] || gridClasses["grid-3"];
+  // List items
+  const items = section.items
+    .map((item) => {
+      const icon = item.icon ? `<div class="text-4xl mr-6">${renderIconEmoji(item.icon)}</div>` : "";
+      const link = item.link
+        ? `<a href="${escapeHTML(item.link)}" class="${styles.interactive.link} text-sm font-medium mt-2 inline-block">Learn more →</a>`
+        : "";
 
-  const items = section.items.map(item => {
-    if (variant === "list") {
       return `
-        <div class="flex gap-4">
-          ${item.icon ? `<div class="flex-shrink-0">${renderIcon(item.icon, theme)}</div>` : ""}
+        <div class="flex mb-10 pb-10 border-b ${styles.colors.border}">
+          ${icon}
           <div>
-            <h3 class="text-xl font-semibold mb-2">${escapeHTML(item.title)}</h3>
-            <p class="text-muted">${escapeHTML(item.description)}</p>
-            ${item.link ? `<a href="${escapeHTML(item.link)}" class="text-primary hover:opacity-80 mt-2 inline-block">Learn more →</a>` : ""}
+            <h3 class="${styles.colors.text} font-semibold text-lg mb-2">${escapeHTML(item.title)}</h3>
+            <p class="${styles.colors.textMuted}">${escapeHTML(item.description)}</p>
+            ${link}
           </div>
         </div>
-      `;
-    }
+      `.trim();
+    })
+    .join("\n");
 
-    return `
-      <div class="text-center p-6 ${theme.radius.card} hover:bg-subtle transition-colors">
-        ${item.icon ? `<div class="mb-4 flex justify-center">${renderIcon(item.icon, theme)}</div>` : ""}
-        <h3 class="text-xl font-semibold mb-3">${escapeHTML(item.title)}</h3>
-        <p class="text-muted">${escapeHTML(item.description)}</p>
-        ${item.link ? `<a href="${escapeHTML(item.link)}" class="text-primary hover:opacity-80 mt-3 inline-block">Learn more →</a>` : ""}
-      </div>
-    `;
-  }).join("\n");
+  const listContent = `
+    <div class="max-w-3xl mx-auto">
+      ${items}
+    </div>
+  `.trim();
 
-  return `<div class="${gridClass}">${items}</div>`;
+  const innerContent = `
+    ${header}
+    ${listContent}
+  `
+    .trim();
+
+  return renderContainer(innerContent, styles, {
+    id: section.id,
+    maxWidth: "max-w-6xl",
+  });
 }
 
-function renderIcon(icon: string, theme: any): string {
+/**
+ * Render a single feature item card
+ */
+function renderFeatureItem(
+  item: { icon?: string; title: string; description: string; link?: string },
+  styles: SemanticStyles
+): string {
+  const iconHTML = item.icon
+    ? `<div class="mb-4 text-3xl">${renderIconEmoji(item.icon)}</div>`
+    : "";
+
+  const linkHTML = item.link
+    ? `<a href="${escapeHTML(item.link)}" class="${styles.interactive.link} text-sm font-medium mt-3 inline-block">Learn more →</a>`
+    : "";
+
+  return `
+    <div class="p-6 rounded-lg ${styles.container.background} ${styles.emphasis.shadow} hover:${styles.emphasis.shadow} transition-shadow">
+      ${iconHTML}
+      <h3 class="${styles.colors.text} font-semibold text-lg mb-2">${escapeHTML(item.title)}</h3>
+      <p class="${styles.colors.textMuted} text-sm mb-4">${escapeHTML(item.description)}</p>
+      ${linkHTML}
+    </div>
+  `.trim();
+}
+
+/**
+ * Map icon names to emoji
+ */
+function renderIconEmoji(icon: string): string {
   const icons: Record<string, string> = {
     rocket: "🚀",
     shield: "🛡️",
@@ -92,6 +204,5 @@ function renderIcon(icon: string, theme: any): string {
     link: "🔗",
   };
 
-  const iconContent = icons[icon] || icon;
-  return `<div class="w-12 h-12 bg-feature ${theme.radius.card} flex items-center justify-center text-2xl">${iconContent}</div>`;
+  return icons[icon] || icon;
 }

@@ -1,34 +1,48 @@
+/**
+ * Navigation Section — Semantic-aware header/nav bar
+ * Structural component with light semantic integration
+ */
+
 import { NavigationSection, RenderOptions } from "../types.js";
+import { SemanticStyles } from "../semantic.js";
 import { escapeHTML } from "../renderer.js";
-import { defaultThemeSpec } from "../theme.js";
 
 /**
- * Render a navigation section
+ * Main navigation renderer - dispatches to variant renderers
  */
-export function renderNavigation(section: NavigationSection, options: RenderOptions = {}): string {
+export function renderNavigation(
+  section: NavigationSection,
+  styles: SemanticStyles,
+  options: RenderOptions = {}
+): string {
   const variant = section.variant || "default";
-  const theme = options.theme || defaultThemeSpec;
 
   switch (variant) {
     case "centered":
-      return renderNavigationCentered(section, options, theme);
+      return renderNavigationCentered(section, styles, options);
     case "split":
-      return renderNavigationSplit(section, options, theme);
+      return renderNavigationSplit(section, styles, options);
     default:
-      return renderNavigationDefault(section, options, theme);
+      return renderNavigationDefault(section, styles, options);
   }
 }
 
 /**
  * Default navigation: logo left, links center, CTA right
  */
-function renderNavigationDefault(section: NavigationSection, options: RenderOptions, theme: any): string {
+function renderNavigationDefault(
+  section: NavigationSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const logo = renderLogo(section);
-  const links = renderLinks(section.links);
-  const ctaButton = renderCTA(section.cta, theme);
+  const links = renderLinks(section.links, styles);
+  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+
+  const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
   return `
-    <nav class="sticky top-0 z-50 bg-page border-b border-default"${section.id ? ` id="${escapeHTML(section.id)}"` : ""}>
+    <nav class="sticky top-0 z-50 ${styles.colors.background} border-b ${styles.colors.border}"${idAttr}>
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           ${logo}
@@ -36,7 +50,7 @@ function renderNavigationDefault(section: NavigationSection, options: RenderOpti
             ${links}
           </div>
           ${ctaButton ? `<div class="hidden md:block">${ctaButton}</div>` : ""}
-          <button class="md:hidden" aria-label="Toggle menu">
+          <button class="md:hidden ${styles.colors.text}" aria-label="Toggle menu">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -50,13 +64,19 @@ function renderNavigationDefault(section: NavigationSection, options: RenderOpti
 /**
  * Centered navigation: logo centered on top row, links centered below
  */
-function renderNavigationCentered(section: NavigationSection, options: RenderOptions, theme: any): string {
+function renderNavigationCentered(
+  section: NavigationSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const logo = renderLogo(section);
-  const links = renderLinks(section.links);
-  const ctaButton = renderCTA(section.cta, theme);
+  const links = renderLinks(section.links, styles);
+  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+
+  const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
   return `
-    <nav class="sticky top-0 z-50 bg-page border-b border-default"${section.id ? ` id="${escapeHTML(section.id)}"` : ""}>
+    <nav class="sticky top-0 z-50 ${styles.colors.background} border-b ${styles.colors.border}"${idAttr}>
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex flex-col items-center py-4 gap-4">
           <div class="flex items-center gap-4">
@@ -66,7 +86,7 @@ function renderNavigationCentered(section: NavigationSection, options: RenderOpt
           <div class="hidden md:flex items-center gap-8">
             ${links}
           </div>
-          <button class="absolute right-4 top-4 md:hidden" aria-label="Toggle menu">
+          <button class="absolute right-4 top-4 md:hidden ${styles.colors.text}" aria-label="Toggle menu">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -78,56 +98,95 @@ function renderNavigationCentered(section: NavigationSection, options: RenderOpt
 }
 
 /**
- * Split navigation: logo far left, links in center, CTA far right
+ * Split navigation: logo on left, links split across center and right
  */
-function renderNavigationSplit(section: NavigationSection, options: RenderOptions, theme: any): string {
+function renderNavigationSplit(
+  section: NavigationSection,
+  styles: SemanticStyles,
+  options: RenderOptions
+): string {
   const logo = renderLogo(section);
-  const links = renderLinks(section.links);
-  const ctaButton = renderCTA(section.cta, theme);
+  const links = renderLinks(section.links, styles);
+  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+
+  const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
   return `
-    <nav class="sticky top-0 z-50 bg-page border-b border-default"${section.id ? ` id="${escapeHTML(section.id)}"` : ""}>
+    <nav class="sticky top-0 z-50 ${styles.colors.background} border-b ${styles.colors.border}"${idAttr}>
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-3 items-center h-16">
-          <div class="flex items-center">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-12">
             ${logo}
+            <div class="hidden md:flex items-center gap-8">
+              ${links}
+            </div>
           </div>
-          <div class="hidden md:flex items-center justify-center gap-8">
-            ${links}
-          </div>
-          <div class="flex items-center justify-end gap-4">
-            ${ctaButton ? `<div class="hidden md:block">${ctaButton}</div>` : ""}
-            <button class="md:hidden" aria-label="Toggle menu">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
+          ${ctaButton ? `<div class="hidden md:flex">${ctaButton}</div>` : ""}
+          <button class="md:hidden ${styles.colors.text}" aria-label="Toggle menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </div>
       </div>
     </nav>
   `;
 }
 
+/**
+ * Render logo (text or image)
+ */
 function renderLogo(section: NavigationSection): string {
-  if (!section.logo) return "";
+  const logo = section.logo;
+
+  if (!logo) {
+    return "";
+  }
+
+  if (logo.image) {
+    const href = logo.href || "/";
+    return `
+      <a href="${escapeHTML(href)}" class="flex items-center gap-2">
+        <img src="${escapeHTML(logo.image)}" alt="Logo" class="h-8 w-auto" />
+      </a>
+    `;
+  }
+
+  if (logo.text) {
+    const href = logo.href || "/";
+    return `
+      <a href="${escapeHTML(href)}" class="font-bold text-lg">
+        ${escapeHTML(logo.text)}
+      </a>
+    `;
+  }
+
+  return "";
+}
+
+/**
+ * Render navigation links
+ */
+function renderLinks(links: any[], styles: SemanticStyles): string {
+  return links
+    .map((link) => {
+      return `
+        <a href="${escapeHTML(link.href)}" class="${styles.interactive.link} hover:underline">
+          ${escapeHTML(link.text)}
+        </a>
+      `;
+    })
+    .join("\n");
+}
+
+/**
+ * Render a CTA button in the navigation
+ */
+function renderNavigationButton(cta: any, styles: SemanticStyles): string {
+  const variant = cta.variant || "primary";
   return `
-    <a href="${escapeHTML(section.logo.href || "/")}" class="flex items-center gap-2">
-      ${section.logo.image ? `<img src="${escapeHTML(section.logo.image)}" alt="Logo" class="h-8" />` : ""}
-      ${section.logo.text ? `<span class="text-xl font-bold">${escapeHTML(section.logo.text)}</span>` : ""}
+    <a href="${escapeHTML(cta.href)}" class="${variant === "primary" ? styles.interactive.buttonPrimary : styles.interactive.buttonSecondary} px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+      ${escapeHTML(cta.text)}
     </a>
   `;
-}
-
-function renderLinks(links: NavigationSection["links"]): string {
-  return links.map(link => `
-    <a href="${escapeHTML(link.href)}" class="text-muted hover:text-default transition-colors">
-      ${escapeHTML(link.text)}
-    </a>
-  `).join("\n");
-}
-
-function renderCTA(cta: NavigationSection["cta"], theme: any): string {
-  if (!cta) return "";
-  return `<a href="${escapeHTML(cta.href)}" class="bg-primary text-inverse px-6 py-2 ${theme.radius.button} hover:opacity-90 transition-opacity">${escapeHTML(cta.text)}</a>`;
 }
