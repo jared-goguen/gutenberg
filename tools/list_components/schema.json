@@ -1,0 +1,26 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "components": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "variants": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "description": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

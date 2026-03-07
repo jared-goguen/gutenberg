@@ -1,0 +1,40 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "primaryColor": {
+        "type": "string",
+        "description": "Primary brand color (hex)",
+        "default": "#3b82f6"
+      },
+      "secondaryColor": {
+        "type": "string",
+        "description": "Secondary brand color (hex)",
+        "default": "#1f2937"
+      },
+      "fontFamily": {
+        "type": "string",
+        "description": "Font family",
+        "default": "system-ui, -apple-system, sans-serif"
+      },
+      "borderRadius": {
+        "type": "string",
+        "description": "Default border radius",
+        "default": "0.5rem"
+      }
+    }
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "theme": {
+        "type": "object",
+        "description": "Theme configuration object"
+      },
+      "tailwindConfig": {
+        "type": "string",
+        "description": "Complete Tailwind config file content"
+      }
+    }
+  }
+}

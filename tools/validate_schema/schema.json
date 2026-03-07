@@ -1,0 +1,38 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "schema": {
+        "description": "Page schema to validate as a YAML string or a plain object.",
+        "oneOf": [
+          { "type": "string", "description": "YAML string" },
+          { "type": "object", "description": "Plain JS object" }
+        ]
+      }
+    },
+    "required": ["schema"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "valid": { "type": "boolean", "description": "True if schema has no blocking errors" },
+      "errors": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "path": { "type": "string" },
+            "message": { "type": "string" }
+          }
+        },
+        "description": "Blocking validation errors"
+      },
+      "warnings": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Non-blocking suggestions"
+      }
+    }
+  }
+}

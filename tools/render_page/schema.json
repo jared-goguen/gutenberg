@@ -1,0 +1,33 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "schema": {
+        "description": "Page schema as a YAML string or a plain object. Must have a 'page.sections' array.",
+        "oneOf": [
+          { "type": "string", "description": "YAML string" },
+          { "type": "object", "description": "Plain JS object" }
+        ]
+      },
+      "options": {
+        "type": "object",
+        "description": "Optional render options",
+        "properties": {
+          "minify": { "type": "boolean", "description": "Minify HTML output", "default": false },
+          "includeComments": { "type": "boolean", "description": "Include HTML comments", "default": true },
+          "tailwindCDN": { "type": "boolean", "description": "Include Tailwind CSS CDN link", "default": true },
+          "indentSize": { "type": "number", "description": "Spaces per indent level", "default": 2 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "required": ["schema"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "html": { "type": "string", "description": "Complete rendered HTML document" }
+    }
+  }
+}
