@@ -16,11 +16,6 @@ const componentRenderers: Record<ComponentType, (section: any, options: RenderOp
   cta: renderCTA,
   navigation: renderNavigation,
   footer: renderFooter,
-  testimonials: (section, options) => "<div>Testimonials component not yet implemented</div>",
-  pricing: (section, options) => "<div>Pricing component not yet implemented</div>",
-  faq: (section, options) => "<div>FAQ component not yet implemented</div>",
-  contact: (section, options) => "<div>Contact component not yet implemented</div>",
-  gallery: (section, options) => "<div>Gallery component not yet implemented</div>",
 };
 
 /**
@@ -33,7 +28,14 @@ export function renderSection(section: Section, options: RenderOptions = {}): st
     throw new Error(`Unknown component type: ${section.type}`);
   }
 
-  return renderer(section, options);
+  const html = renderer(section, options);
+
+  if (options.includeComments !== false) {
+    const label = section.id ? `${section.type}#${section.id}` : section.type;
+    return `<!-- section: ${label} -->\n${html}`;
+  }
+
+  return html;
 }
 
 /**
@@ -70,31 +72,6 @@ export function getComponentList(): Array<{ type: ComponentType; variants: strin
       type: "footer",
       variants: ["simple", "detailed", "newsletter"],
       description: "Footer sections with links, social media, copyright, and optional newsletter signup",
-    },
-    {
-      type: "testimonials",
-      variants: ["grid", "carousel", "single"],
-      description: "Customer testimonials and reviews (coming soon)",
-    },
-    {
-      type: "pricing",
-      variants: ["cards", "table", "comparison"],
-      description: "Pricing tables and comparison grids (coming soon)",
-    },
-    {
-      type: "faq",
-      variants: ["accordion", "grid"],
-      description: "Frequently asked questions sections (coming soon)",
-    },
-    {
-      type: "contact",
-      variants: ["form", "split", "centered"],
-      description: "Contact forms with customizable fields (coming soon)",
-    },
-    {
-      type: "gallery",
-      variants: ["grid", "masonry", "carousel"],
-      description: "Image galleries with lightbox support (coming soon)",
     },
   ];
 }

@@ -75,14 +75,13 @@ describe("Tool discovery", () => {
 });
 
 describe("list_components", () => {
-  test("returns all 11 component types", async () => {
+  test("returns all 6 component types", async () => {
     const result = JSON.parse(await srv.call("list_components", {}));
-    expect(result).toHaveLength(11);
+    expect(result).toHaveLength(6);
 
     const types = result.map((c: any) => c.type).sort();
     expect(types).toEqual([
-      "contact", "content", "cta", "faq", "features",
-      "footer", "gallery", "hero", "navigation", "pricing", "testimonials",
+      "content", "cta", "features", "footer", "hero", "navigation",
     ]);
   });
 
@@ -180,7 +179,9 @@ describe("render_page", () => {
 
   test("applies layout theme class", async () => {
     const result = JSON.parse(await srv.call("render_page", { schema: fullSchema }));
-    expect(result.html).toContain("bg-white");
+    expect(result.html).toContain("--sky-500");  // CSS var for hue scale
+    expect(result.html).toContain("--color-primary");  // CSS var for token
+    expect(result.html).toContain("bg-page");  // semantic utility class
   });
 
   test("accepts YAML string input", async () => {
@@ -244,20 +245,23 @@ describe("preview_component", () => {
 });
 
 describe("generate_theme", () => {
-  test("returns theme object and tailwind config", async () => {
+  test("returns theme spec with hue bindings", async () => {
     const result = JSON.parse(await srv.call("generate_theme", {
-      primaryColor: "#ff0000",
-      fontFamily: "Inter, sans-serif",
+      primaryHue: "rose",
+      neutralHue: "slate",
     }));
-    expect(result.theme.colors.primary).toBe("#ff0000");
-    expect(result.theme.fontFamily.sans).toBe("Inter, sans-serif");
-    expect(result.tailwindConfig).toContain("#ff0000");
-    expect(result.tailwindConfig).toContain("module.exports");
+    expect(result.light.hues.primary).toBe("rose");
+    expect(result.light.hues.neutral).toBe("slate");
+    expect(result.light.tokens["primary"]).toBe("primary.500");
+    expect(result.light.radius.button).toBe("rounded-lg");
+    expect(Array.isArray(result.availableHues)).toBe(true);
   });
 
   test("uses defaults when no options provided", async () => {
     const result = JSON.parse(await srv.call("generate_theme", {}));
-    expect(result.theme.colors.primary).toBe("#3b82f6");
-    expect(typeof result.tailwindConfig).toBe("string");
+    expect(result.light.hues.primary).toBe("sky");
+    expect(result.light.hues.neutral).toBe("slate");
+    expect(result.dark.hues.primary).toBe("sky");
+    expect(result.dark.hues.neutral).toBe("slate");
   });
 });

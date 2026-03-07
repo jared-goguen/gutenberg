@@ -1,11 +1,11 @@
 import { PageLayout } from "../types.js";
+import type { ThemeSpec } from "../theme.js";
 
 /**
  * Get layout-specific CSS classes
  */
-export function getLayoutClasses(layout?: PageLayout): Record<string, string> {
+export function getLayoutClasses(layout?: PageLayout, theme?: ThemeSpec): Record<string, string> {
   const type = layout?.type || "standard";
-  const theme = layout?.theme || "light";
 
   const containerClasses = {
     standard: "max-w-7xl",
@@ -14,23 +14,20 @@ export function getLayoutClasses(layout?: PageLayout): Record<string, string> {
     docs: "max-w-7xl",
   };
 
-  const themeClasses = {
-    light: "bg-white text-gray-900",
-    dark: "bg-gray-900 text-white",
-    auto: "bg-white text-gray-900 dark:bg-gray-900 dark:text-white",
-  };
+  // Use semantic class names for background instead of hardcoded Tailwind
+  const themeClasses = "bg-page text-default";
 
   return {
     container: containerClasses[type],
-    theme: themeClasses[theme],
+    theme: themeClasses,
   };
 }
 
 /**
  * Wrap content with layout-specific structure
  */
-export function applyLayout(content: string, layout?: PageLayout): string {
-  const classes = getLayoutClasses(layout);
+export function applyLayout(content: string, layout?: PageLayout, theme?: ThemeSpec): string {
+  const classes = getLayoutClasses(layout, theme);
   
   // For docs layout, we might add a sidebar in the future
   if (layout?.type === "docs") {

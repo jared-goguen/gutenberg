@@ -1,29 +1,31 @@
 import { HeroSection, RenderOptions, CTA } from "../types.js";
-import { h, renderHTML, escapeHTML } from "../renderer.js";
+import { escapeHTML } from "../renderer.js";
 import { renderSection } from "../templates/base.js";
+import { defaultThemeSpec } from "../theme.js";
 
 /**
  * Render a hero section
  */
 export function renderHero(section: HeroSection, options: RenderOptions = {}): string {
   const variant = section.variant || "centered";
+  const theme = options.theme || defaultThemeSpec;
 
   switch (variant) {
     case "centered":
-      return renderHeroCentered(section, options);
+      return renderHeroCentered(section, options, theme);
     case "split":
-      return renderHeroSplit(section, options);
+      return renderHeroSplit(section, options, theme);
     case "full-bleed":
-      return renderHeroFullBleed(section, options);
+      return renderHeroFullBleed(section, options, theme);
     default:
-      return renderHeroCentered(section, options);
+      return renderHeroCentered(section, options, theme);
   }
 }
 
 /**
  * Centered hero variant
  */
-function renderHeroCentered(section: HeroSection, options: RenderOptions): string {
+function renderHeroCentered(section: HeroSection, options: RenderOptions, theme: any): string {
   const { content } = section;
   const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
 
@@ -33,18 +35,18 @@ function renderHeroCentered(section: HeroSection, options: RenderOptions): strin
         ${escapeHTML(content.heading)}
       </h1>
       ${content.subheading ? `
-      <p class="text-xl md:text-2xl text-gray-600 mb-8">
+      <p class="text-xl md:text-2xl text-muted mb-8">
         ${escapeHTML(content.subheading)}
       </p>
       ` : ""}
       ${content.description ? `
-      <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
+      <p class="text-lg text-muted mb-10 max-w-2xl mx-auto">
         ${escapeHTML(content.description)}
       </p>
       ` : ""}
       ${ctas.length > 0 ? `
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        ${ctas.map(cta => renderCTAButton(cta)).join("\n")}
+        ${ctas.map(cta => renderCTAButton(cta, theme)).join("\n")}
       </div>
       ` : ""}
       ${content.image ? `
@@ -55,21 +57,17 @@ function renderHeroCentered(section: HeroSection, options: RenderOptions): strin
     </div>
   `;
 
-  const style = content.backgroundImage 
-    ? `background-image: url('${escapeHTML(content.backgroundImage)}'); background-size: cover; background-position: center;`
-    : "";
-
   return renderSection(heroContent, {
     id: section.id,
-    className: section.className,
     spacing: "xl",
+    theme,
   });
 }
 
 /**
  * Split hero variant (text on one side, image on other)
  */
-function renderHeroSplit(section: HeroSection, options: RenderOptions): string {
+function renderHeroSplit(section: HeroSection, options: RenderOptions, theme: any): string {
   const { content } = section;
   const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
 
@@ -80,18 +78,18 @@ function renderHeroSplit(section: HeroSection, options: RenderOptions): string {
           ${escapeHTML(content.heading)}
         </h1>
         ${content.subheading ? `
-        <p class="text-xl text-gray-600 mb-6">
+        <p class="text-xl text-muted mb-6">
           ${escapeHTML(content.subheading)}
         </p>
         ` : ""}
         ${content.description ? `
-        <p class="text-lg text-gray-600 mb-8">
+        <p class="text-lg text-muted mb-8">
           ${escapeHTML(content.description)}
         </p>
         ` : ""}
         ${ctas.length > 0 ? `
         <div class="flex flex-col sm:flex-row gap-4">
-          ${ctas.map(cta => renderCTAButton(cta)).join("\n")}
+          ${ctas.map(cta => renderCTAButton(cta, theme)).join("\n")}
         </div>
         ` : ""}
       </div>
@@ -105,15 +103,15 @@ function renderHeroSplit(section: HeroSection, options: RenderOptions): string {
 
   return renderSection(heroContent, {
     id: section.id,
-    className: section.className,
     spacing: "xl",
+    theme,
   });
 }
 
 /**
  * Full-bleed hero variant (background image with overlay)
  */
-function renderHeroFullBleed(section: HeroSection, options: RenderOptions): string {
+function renderHeroFullBleed(section: HeroSection, options: RenderOptions, theme: any): string {
   const { content } = section;
   const ctas = Array.isArray(content.cta) ? content.cta : content.cta ? [content.cta] : [];
 
@@ -136,38 +134,42 @@ function renderHeroFullBleed(section: HeroSection, options: RenderOptions): stri
         ` : ""}
         ${ctas.length > 0 ? `
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          ${ctas.map(cta => renderCTAButton(cta, true)).join("\n")}
+          ${ctas.map(cta => renderCTAButton(cta, theme, true)).join("\n")}
         </div>
         ` : ""}
       </div>
     </div>
   `;
 
-  return heroContent;
+  return renderSection(heroContent, {
+    id: section.id,
+    spacing: "none",
+    theme,
+  });
 }
 
 /**
  * Render a CTA button
  */
-function renderCTAButton(cta: CTA, onDark: boolean = false): string {
+function renderCTAButton(cta: CTA, theme: any, onDark: boolean = false): string {
   const variant = cta.variant || "primary";
   
   const variantClasses = {
     primary: onDark 
       ? "bg-white text-gray-900 hover:bg-gray-100" 
-      : "bg-blue-600 text-white hover:bg-blue-700",
+      : "bg-primary text-inverse hover:opacity-90",
     secondary: onDark
       ? "bg-gray-800 text-white hover:bg-gray-700"
       : "bg-gray-800 text-white hover:bg-gray-900",
     outline: onDark
       ? "border-2 border-white text-white hover:bg-white hover:text-gray-900"
-      : "border-2 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white",
+      : "border-2 border-default text-default hover:bg-default hover:text-inverse",
     ghost: onDark
       ? "text-white hover:bg-white hover:bg-opacity-10"
-      : "text-gray-800 hover:bg-gray-100",
+      : "text-default hover:bg-subtle",
   };
 
-  const classes = `inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg transition-colors ${variantClasses[variant]}`;
+  const classes = `inline-flex items-center justify-center px-8 py-3 text-base font-medium ${theme.radius.button} transition-colors ${variantClasses[variant]}`;
 
   return `<a href="${escapeHTML(cta.href)}" class="${classes}">${escapeHTML(cta.text)}</a>`;
 }

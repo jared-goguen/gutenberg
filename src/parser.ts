@@ -48,13 +48,31 @@ export function normalizeSection(section: any): any {
       cta: "centered",
       navigation: "default",
       footer: "simple",
-      testimonials: "grid",
-      pricing: "cards",
-      faq: "accordion",
-      contact: "form",
-      gallery: "grid",
     };
     normalized.variant = defaultVariants[normalized.type] || "default";
+  }
+
+  // Set default semantic axes (all optional, these are sensible defaults)
+  if (!normalized.vibe) {
+    normalized.vibe = "steady";
+  }
+  if (!normalized.intent) {
+    // Smart default based on component type
+    const defaultIntents: Record<string, string> = {
+      hero: "engage",
+      cta: "direct",
+      features: "inform",
+      content: "inform",
+      navigation: "inform",
+      footer: "inform",
+    };
+    normalized.intent = defaultIntents[normalized.type] || "inform";
+  }
+  if (!normalized.narrative) {
+    normalized.narrative = "rising";  // Most common position
+  }
+  if (!normalized.cohesion) {
+    normalized.cohesion = "continues";  // Most natural flow
   }
 
   return normalized;

@@ -26,7 +26,13 @@ export interface Section {
   type: ComponentType;
   variant?: string;
   id?: string;
-  className?: string;
+  
+  // Semantic axes — orthogonal dimensions for page cohesion
+  vibe?: "serene" | "gentle" | "steady" | "vibrant" | "intense" | "urgent";
+  intent?: "engage" | "inform" | "persuade" | "direct";
+  narrative?: "exposition" | "inciting" | "rising" | "climax" | "falling" | "resolution";
+  cohesion?: "opens" | "continues" | "amplifies" | "supports" | "contrasts" | "pivots" | "echoes" | "resolves" | "closes";
+  
   [key: string]: any;
 }
 
@@ -36,12 +42,7 @@ export type ComponentType =
   | "content"
   | "cta"
   | "navigation"
-  | "footer"
-  | "testimonials"
-  | "pricing"
-  | "faq"
-  | "contact"
-  | "gallery";
+  | "footer";
 
 export interface HeroSection extends Section {
   type: "hero";
@@ -81,6 +82,7 @@ export interface ContentSection extends Section {
 export interface CTASection extends Section {
   type: "cta";
   variant?: "centered" | "split" | "banner";
+  tone?: "brand" | "subtle";  // visual treatment
   heading: string;
   description?: string;
   cta: CTA | CTA[];
@@ -108,6 +110,7 @@ export interface NavLink {
 export interface FooterSection extends Section {
   type: "footer";
   variant?: "simple" | "detailed" | "newsletter";
+  tone?: "light" | "dark";  // visual treatment
   logo?: {
     text?: string;
     image?: string;
@@ -134,82 +137,6 @@ export interface CTA {
   variant?: "primary" | "secondary" | "outline" | "ghost";
 }
 
-export interface TestimonialsSection extends Section {
-  type: "testimonials";
-  variant?: "grid" | "carousel" | "single";
-  heading?: string;
-  items: Testimonial[];
-}
-
-export interface Testimonial {
-  quote: string;
-  author: string;
-  role?: string;
-  company?: string;
-  avatar?: string;
-}
-
-export interface PricingSection extends Section {
-  type: "pricing";
-  variant?: "cards" | "table" | "comparison";
-  heading?: string;
-  items: PricingTier[];
-}
-
-export interface PricingTier {
-  name: string;
-  price: string;
-  period?: string;
-  description?: string;
-  features: string[];
-  cta: CTA;
-  highlighted?: boolean;
-}
-
-export interface FAQSection extends Section {
-  type: "faq";
-  variant?: "accordion" | "grid";
-  heading?: string;
-  items: FAQItem[];
-}
-
-export interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-export interface ContactSection extends Section {
-  type: "contact";
-  variant?: "form" | "split" | "centered";
-  heading?: string;
-  description?: string;
-  fields?: FormField[];
-  submitText?: string;
-}
-
-export interface FormField {
-  name: string;
-  label: string;
-  type: "text" | "email" | "tel" | "textarea" | "select";
-  required?: boolean;
-  options?: string[];
-  placeholder?: string;
-}
-
-export interface GallerySection extends Section {
-  type: "gallery";
-  variant?: "grid" | "masonry" | "carousel";
-  heading?: string;
-  items: GalleryItem[];
-}
-
-export interface GalleryItem {
-  image: string;
-  alt: string;
-  caption?: string;
-  link?: string;
-}
-
 // Validation types
 
 export interface ValidationResult {
@@ -225,11 +152,14 @@ export interface ValidationError {
 
 // Render options
 
+import type { ThemeSpec } from "./theme.js";
+
 export interface RenderOptions {
   minify?: boolean;
   includeComments?: boolean;
   tailwindCDN?: boolean;
   indentSize?: number;
+  theme?: ThemeSpec;
 }
 
 // Component registry

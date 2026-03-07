@@ -2,38 +2,35 @@
   "input": {
     "type": "object",
     "properties": {
-      "primaryColor": {
+      "primaryHue": {
         "type": "string",
-        "description": "Primary brand color (hex)",
-        "default": "#3b82f6"
+        "description": "Primary brand hue (sky, violet, rose, amber, emerald, slate, neutral)",
+        "enum": ["sky", "violet", "rose", "amber", "emerald", "slate", "neutral"],
+        "default": "sky"
       },
-      "secondaryColor": {
+      "neutralHue": {
         "type": "string",
-        "description": "Secondary brand color (hex)",
-        "default": "#1f2937"
-      },
-      "fontFamily": {
-        "type": "string",
-        "description": "Font family",
-        "default": "system-ui, -apple-system, sans-serif"
-      },
-      "borderRadius": {
-        "type": "string",
-        "description": "Default border radius",
-        "default": "0.5rem"
+        "description": "Neutral hue for grayscale palette (slate or neutral)",
+        "enum": ["slate", "neutral"],
+        "default": "slate"
       }
-    }
+    },
+    "additionalProperties": false
   },
   "output": {
     "type": "object",
     "properties": {
-      "theme": {
+      "light": {
         "type": "object",
-        "description": "Theme configuration object"
+        "description": "Light theme spec"
       },
-      "tailwindConfig": {
-        "type": "string",
-        "description": "Complete Tailwind config file content"
+      "dark": {
+        "type": "object",
+        "description": "Dark theme spec"
+      },
+      "availableHues": {
+        "type": "array",
+        "description": "List of available hue names"
       }
     }
   }

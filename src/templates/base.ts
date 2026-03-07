@@ -1,5 +1,7 @@
 import { PageMeta, RenderOptions } from "../types.js";
 import { h, selfClosing, renderHTML } from "../renderer.js";
+import type { ThemeSpec } from "../theme.js";
+import { resolveThemeSpec } from "../color.js";
 
 /**
  * Generate complete HTML document
@@ -13,6 +15,14 @@ export function renderDocument(
   const description = meta?.description || "";
   const language = meta?.language || "en";
   const tailwindCDN = options.tailwindCDN !== false;
+
+  // Resolve theme and generate CSS variables + utility classes
+  const theme = options.theme;
+  let themeCSS = "";
+  if (theme) {
+    const resolved = resolveThemeSpec(theme.hues, theme.tokens);
+    themeCSS = resolved.cssVars + "\n" + resolved.utilityClasses;
+  }
 
   const head = h("head", null,
     selfClosing("meta", { charset: "UTF-8" }),
@@ -39,8 +49,10 @@ export function renderDocument(
     // Tailwind CSS
     tailwindCDN ? h("script", { src: "https://cdn.tailwindcss.com" }, "") : "",
     
-    // Custom styles
+    // Custom styles (theme CSS vars + utility classes + default styles)
     h("style", null, `
+      ${themeCSS}
+      
       /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 10px;
@@ -63,7 +75,7 @@ export function renderDocument(
       
       /* Focus visible */
       *:focus-visible {
-        outline: 2px solid #3b82f6;
+        outline: 2px solid var(--color-primary, #3b82f6);
         outline-offset: 2px;
       }
     `)
@@ -97,9 +109,12 @@ export function renderSection(
   content: string,
   options: {
     id?: string;
-    className?: string;
-    theme?: "light" | "dark";
+    theme?: ThemeSpec;
     spacing?: "none" | "sm" | "md" | "lg" | "xl";
+    tone?: "light" | "dark" | "brand" | "subtle";
+    bgClass?: string;
+    comment?: string;
+    includeComments?: boolean;
   } = {}
 ): string {
   const spacingClasses = {
@@ -110,19 +125,33 @@ export function renderSection(
     xl: "py-24 md:py-32",
   };
 
-  const themeClasses = {
-    light: "bg-white text-gray-900",
-    dark: "bg-gray-900 text-white",
-  };
-
   const spacing = spacingClasses[options.spacing || "md"];
-  const theme = options.theme ? themeClasses[options.theme] : "";
-  const className = [spacing, theme, options.className].filter(Boolean).join(" ");
+  
+  // Determine background based on tone using semantic class names
+  let bgClass = "";
+  if (options.tone === "dark") {
+    bgClass = "bg-inverse text-inverse";
+  } else if (options.tone === "brand") {
+    bgClass = "bg-primary text-inverse";
+  } else if (options.tone === "subtle") {
+    bgClass = "bg-subtle";
+  } else if (options.bgClass) {
+    bgClass = options.bgClass;
+  }
+
+  const className = [spacing, bgClass].filter(Boolean).join(" ");
 
   const attrs: Record<string, string> = {};
   if (options.id) attrs.id = options.id;
   if (className) attrs.class = className;
 
   const section = h("section", Object.keys(attrs).length > 0 ? attrs : null, content);
-  return renderHTML(section);
+  const html = renderHTML(section);
+
+  if (options.includeComments !== false) {
+    const label = options.id ? `${options.id}` : "section";
+    return `<!-- section: ${label} -->\n${html}`;
+  }
+
+  return html;
 }

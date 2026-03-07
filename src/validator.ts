@@ -7,12 +7,13 @@ const VALID_COMPONENT_TYPES: ComponentType[] = [
   "cta",
   "navigation",
   "footer",
-  "testimonials",
-  "pricing",
-  "faq",
-  "contact",
-  "gallery",
 ];
+
+// Semantic axes validation
+const VALID_VIBES = ["serene", "gentle", "steady", "vibrant", "intense", "urgent"];
+const VALID_INTENTS = ["engage", "inform", "persuade", "direct"];
+const VALID_NARRATIVES = ["exposition", "inciting", "rising", "climax", "falling", "resolution"];
+const VALID_COHESIONS = ["opens", "continues", "amplifies", "supports", "contrasts", "pivots", "echoes", "resolves", "closes"];
 
 /**
  * Validate a PageSchema and return detailed validation results
@@ -177,112 +178,35 @@ export function validateSection(section: Section, index: number): ValidationErro
     case "footer":
       // Footer is flexible, no strict requirements
       break;
+  }
 
-    case "testimonials":
-      if (!section.items || !Array.isArray(section.items)) {
-        errors.push({
-          path: `${path}.items`,
-          message: "Testimonials section requires 'items' array",
-        });
-      } else {
-        section.items.forEach((item: any, i: number) => {
-          if (!item.quote) {
-            errors.push({
-              path: `${path}.items[${i}].quote`,
-              message: "Testimonial requires a quote",
-            });
-          }
-          if (!item.author) {
-            errors.push({
-              path: `${path}.items[${i}].author`,
-              message: "Testimonial requires an author",
-            });
-          }
-        });
-      }
-      break;
+  // Validate semantic axes (all optional, but if present must be valid)
+  if (section.vibe && !VALID_VIBES.includes(section.vibe)) {
+    errors.push({
+      path: `${path}.vibe`,
+      message: `Invalid vibe '${section.vibe}'. Valid values: ${VALID_VIBES.join(", ")}`,
+    });
+  }
 
-    case "pricing":
-      if (!section.items || !Array.isArray(section.items)) {
-        errors.push({
-          path: `${path}.items`,
-          message: "Pricing section requires 'items' array",
-        });
-      } else {
-        section.items.forEach((item: any, i: number) => {
-          if (!item.name) {
-            errors.push({
-              path: `${path}.items[${i}].name`,
-              message: "Pricing tier requires a name",
-            });
-          }
-          if (!item.price) {
-            errors.push({
-              path: `${path}.items[${i}].price`,
-              message: "Pricing tier requires a price",
-            });
-          }
-          if (!item.cta) {
-            errors.push({
-              path: `${path}.items[${i}].cta`,
-              message: "Pricing tier requires a CTA",
-            });
-          }
-        });
-      }
-      break;
+  if (section.intent && !VALID_INTENTS.includes(section.intent)) {
+    errors.push({
+      path: `${path}.intent`,
+      message: `Invalid intent '${section.intent}'. Valid values: ${VALID_INTENTS.join(", ")}`,
+    });
+  }
 
-    case "faq":
-      if (!section.items || !Array.isArray(section.items)) {
-        errors.push({
-          path: `${path}.items`,
-          message: "FAQ section requires 'items' array",
-        });
-      } else {
-        section.items.forEach((item: any, i: number) => {
-          if (!item.question) {
-            errors.push({
-              path: `${path}.items[${i}].question`,
-              message: "FAQ item requires a question",
-            });
-          }
-          if (!item.answer) {
-            errors.push({
-              path: `${path}.items[${i}].answer`,
-              message: "FAQ item requires an answer",
-            });
-          }
-        });
-      }
-      break;
+  if (section.narrative && !VALID_NARRATIVES.includes(section.narrative)) {
+    errors.push({
+      path: `${path}.narrative`,
+      message: `Invalid narrative '${section.narrative}'. Valid values: ${VALID_NARRATIVES.join(", ")}`,
+    });
+  }
 
-    case "contact":
-      // Contact form is flexible
-      break;
-
-    case "gallery":
-      if (!section.items || !Array.isArray(section.items)) {
-        errors.push({
-          path: `${path}.items`,
-          message: "Gallery section requires 'items' array",
-        });
-      } else {
-        section.items.forEach((item: any, i: number) => {
-          if (!item.image) {
-            errors.push({
-              path: `${path}.items[${i}].image`,
-              message: "Gallery item requires an image URL",
-            });
-          }
-          if (!item.alt) {
-            errors.push({
-              path: `${path}.items[${i}].alt`,
-              message: "Gallery item requires alt text for accessibility",
-            });
-          }
-        });
-      }
-      break;
+  if (section.cohesion && !VALID_COHESIONS.includes(section.cohesion)) {
+    errors.push({
+      path: `${path}.cohesion`,
+      message: `Invalid cohesion '${section.cohesion}'. Valid values: ${VALID_COHESIONS.join(", ")}`,
+    });
   }
 
   return errors;

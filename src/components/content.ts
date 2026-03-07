@@ -1,12 +1,14 @@
 import { ContentSection, RenderOptions } from "../types.js";
 import { marked } from "marked";
 import { renderSection } from "../templates/base.js";
+import { defaultThemeSpec } from "../theme.js";
 
 /**
  * Render a content section
  */
 export function renderContent(section: ContentSection, options: RenderOptions = {}): string {
   const variant = section.variant || "prose";
+  const theme = options.theme || defaultThemeSpec;
   
   let htmlContent = "";
   
@@ -30,7 +32,7 @@ export function renderContent(section: ContentSection, options: RenderOptions = 
 
   return renderSection(content, {
     id: section.id,
-    className: section.className,
     spacing: "lg",
+    theme,
   });
 }
