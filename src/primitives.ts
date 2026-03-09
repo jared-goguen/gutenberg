@@ -4,7 +4,7 @@
  */
 
 import { CTA, Cohesion } from "./types.js";
-import { SemanticStyles } from "./semantic.js";
+import { SemanticStyles, type Vibe } from "./semantic.js";
 import { escapeHTML } from "./renderer.js";
 
 /**
@@ -71,16 +71,29 @@ export function renderButton(
 export function renderContainer(
   content: string,
   styles: SemanticStyles,
-  options: { id?: string; maxWidth?: string } = {}
+  options: { id?: string; maxWidth?: string; vibe?: Vibe } = {}
 ): string {
   const idAttr = options.id ? ` id="${escapeHTML(options.id)}"` : "";
   const maxWidthClass = options.maxWidth || "max-w-6xl";
+
+  // Apply vibe-based vertical spacing (py-*)
+  const vibeSpacing = options.vibe
+    ? {
+        serene: "py-24 md:py-32",
+        gentle: "py-20 md:py-24",
+        steady: "py-12 md:py-16",
+        vibrant: "py-8 md:py-12",
+        intense: "py-6 md:py-8",
+        urgent: "py-4 md:py-6",
+      }[options.vibe]
+    : "py-12 md:py-16"; // Default to steady
 
   const classes = `
     ${styles.container.padding}
     ${styles.container.margin}
     ${styles.container.background}
     ${styles.colors.background}
+    ${vibeSpacing}
     ${maxWidthClass}
     mx-auto px-4 md:px-6 lg:px-8
   `.trim().replace(/\s+/g, " ");

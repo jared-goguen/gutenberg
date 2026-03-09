@@ -6,6 +6,7 @@
 import { NavigationSection, RenderOptions } from "../types.js";
 import { SemanticStyles } from "../semantic.js";
 import { escapeHTML } from "../renderer.js";
+import { renderButton } from "./buttons.js";
 
 /**
  * Main navigation renderer - dispatches to variant renderers
@@ -37,7 +38,7 @@ function renderNavigationDefault(
 ): string {
   const logo = renderLogo(section);
   const links = renderLinks(section.links, styles);
-  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+  const ctaButton = section.cta ? renderButton(section.cta, styles, { size: "sm" }) : "";
 
   const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
@@ -71,7 +72,7 @@ function renderNavigationCentered(
 ): string {
   const logo = renderLogo(section);
   const links = renderLinks(section.links, styles);
-  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+  const ctaButton = section.cta ? renderButton(section.cta, styles, { size: "sm" }) : "";
 
   const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
@@ -107,7 +108,7 @@ function renderNavigationSplit(
 ): string {
   const logo = renderLogo(section);
   const links = renderLinks(section.links, styles);
-  const ctaButton = section.cta ? renderNavigationButton(section.cta, styles) : "";
+  const ctaButton = section.cta ? renderButton(section.cta, styles, { size: "sm" }) : "";
 
   const idAttr = section.id ? ` id="${escapeHTML(section.id)}"` : "";
 
@@ -182,11 +183,3 @@ function renderLinks(links: any[], styles: SemanticStyles): string {
 /**
  * Render a CTA button in the navigation
  */
-function renderNavigationButton(cta: any, styles: SemanticStyles): string {
-  const variant = cta.variant || "primary";
-  return `
-    <a href="${escapeHTML(cta.href)}" class="${variant === "primary" ? styles.interactive.buttonPrimary : styles.interactive.buttonSecondary} px-6 py-2 rounded-lg text-sm font-medium transition-colors">
-      ${escapeHTML(cta.text)}
-    </a>
-  `;
-}

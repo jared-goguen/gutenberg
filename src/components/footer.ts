@@ -59,6 +59,7 @@ function renderFooterSimple(
     .trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
@@ -127,6 +128,7 @@ function renderFooterDetailed(
     .trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
@@ -205,6 +207,7 @@ function renderFooterNewsletter(
     .trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });

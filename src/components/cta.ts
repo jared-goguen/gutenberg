@@ -8,9 +8,9 @@ import { SemanticStyles } from "../semantic.js";
 import {
   renderHeading,
   renderParagraph,
-  renderButton,
   renderContainer,
 } from "../primitives.js";
+import { renderButton } from "./buttons.js";
 import { escapeHTML } from "../renderer.js";
 
 /**
@@ -53,7 +53,7 @@ function renderCTACentered(
 
   const buttons = `
     <div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-      ${ctas.map((cta) => renderButton(cta, styles, "primary")).join("\n")}
+      ${ctas.map((cta) => renderButton(cta, styles, { variant: "primary" })).join("\n")}
     </div>
   `.trim();
 
@@ -66,6 +66,7 @@ function renderCTACentered(
   `.trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
@@ -89,7 +90,7 @@ function renderCTASplit(
 
   const buttons = `
     <div class="flex flex-col gap-3">
-      ${ctas.map((cta) => renderButton(cta, styles, "primary")).join("\n")}
+      ${ctas.map((cta) => renderButton(cta, styles, { variant: "primary" })).join("\n")}
     </div>
   `.trim();
 
@@ -106,6 +107,7 @@ function renderCTASplit(
   `.trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
@@ -131,7 +133,7 @@ function renderCTABanner(
 
   const buttons = `
     <div class="flex gap-4 flex-shrink-0">
-      ${ctas.map((cta) => renderButton(cta, styles, "primary")).join("\n")}
+      ${ctas.map((cta) => renderButton(cta, styles, { variant: "primary" })).join("\n")}
     </div>
   `.trim();
 
@@ -148,6 +150,7 @@ function renderCTABanner(
   `.trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });

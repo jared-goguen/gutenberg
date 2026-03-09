@@ -83,6 +83,7 @@ function renderFeaturesGrid(
     .trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
@@ -144,6 +145,7 @@ function renderFeaturesList(
     .trim();
 
   return renderContainer(innerContent, styles, {
+    vibe: section.vibe,
     id: section.id,
     maxWidth: "max-w-6xl",
   });
