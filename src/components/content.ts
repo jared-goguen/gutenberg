@@ -52,6 +52,29 @@ export function renderContent(
 }
 
 /**
+ * Merge class attributes intelligently
+ * If element already has class="...", merge new classes into it
+ * Otherwise, add new class attribute
+ */
+function mergeClasses(existingAttrs: string, newClasses: string): string {
+  // Check if there's already a class attribute
+  const classMatch = existingAttrs.match(/class="([^"]*)"/);
+  
+  if (classMatch) {
+    // Extract existing classes and merge with new ones
+    const existingClasses = classMatch[1];
+    // Deduplicate merged classes
+    const allClasses = `${existingClasses} ${newClasses}`.split(/\s+/).filter(Boolean);
+    const uniqueClasses = Array.from(new Set(allClasses)).join(" ");
+    // Replace the old class attribute with merged one
+    return existingAttrs.replace(/class="[^"]*"/, `class="${uniqueClasses}"`);
+  } else {
+    // No existing class attribute, add one
+    return `${existingAttrs} class="${newClasses}"`;
+  }
+}
+
+/**
  * Apply semantic styles to HTML/markdown content
  * Wraps headers, paragraphs, lists with semantic classes
  * Uses semantic styles instead of hardcoded Tailwind colors
@@ -66,79 +89,79 @@ function applySemanticStylesToHTML(
   // h1 - main heading
   styledHTML = styledHTML.replace(
     /<h1([^>]*)>/g,
-    `<h1$1 class="${styles.typography.heading} ${styles.colors.text}">`
+    (match, attrs) => `<h1${mergeClasses(attrs, `${styles.typography.heading} ${styles.colors.text}`)}>`
   );
 
   // h2 - section heading
   styledHTML = styledHTML.replace(
     /<h2([^>]*)>/g,
-    `<h2$1 class="${styles.typography.heading.replace(/text-\d+xl/, "text-3xl")} ${styles.colors.text} mt-8 mb-4">`
+    (match, attrs) => `<h2${mergeClasses(attrs, `${styles.typography.heading.replace(/text-\d+xl/, "text-3xl")} ${styles.colors.text} mt-8 mb-4`)}>`
   );
 
   // h3 - subsection heading
   styledHTML = styledHTML.replace(
     /<h3([^>]*)>/g,
-    `<h3$1 class="${styles.colors.text} text-xl font-semibold mt-6 mb-3">`
+    (match, attrs) => `<h3${mergeClasses(attrs, `${styles.colors.text} text-xl font-semibold mt-6 mb-3`)}>`
   );
 
   // h4, h5, h6 - smaller headings
   styledHTML = styledHTML.replace(
     /<h[456]([^>]*)>/g,
-    `<h$1 class="${styles.colors.text} text-lg font-semibold mt-4 mb-2">`
+    (match, attrs) => `<h${match[2]}${mergeClasses(attrs, `${styles.colors.text} text-lg font-semibold mt-4 mb-2`)}>`
   );
 
   // Paragraphs with leading-relaxed for readability
   styledHTML = styledHTML.replace(
     /<p([^>]*)>/g,
-    `<p$1 class="${styles.typography.body} ${styles.colors.text} leading-relaxed mb-4">`
+    (match, attrs) => `<p${mergeClasses(attrs, `${styles.typography.body} ${styles.colors.text} leading-relaxed mb-4`)}>`
   );
 
   // Unordered lists
   styledHTML = styledHTML.replace(
     /<ul([^>]*)>/g,
-    `<ul$1 class="list-disc list-inside mb-4 ${styles.colors.text}">`
+    (match, attrs) => `<ul${mergeClasses(attrs, `list-disc list-inside mb-4 ${styles.colors.text}`)}>`
   );
 
   // Ordered lists
   styledHTML = styledHTML.replace(
     /<ol([^>]*)>/g,
-    `<ol$1 class="list-decimal list-inside mb-4 ${styles.colors.text}">`
+    (match, attrs) => `<ol${mergeClasses(attrs, `list-decimal list-inside mb-4 ${styles.colors.text}`)}>`
   );
 
   // List items
   styledHTML = styledHTML.replace(
     /<li([^>]*)>/g,
-    `<li$1 class="mb-2 ${styles.colors.text}">`
+    (match, attrs) => `<li${mergeClasses(attrs, `mb-2 ${styles.colors.text}`)}>`
   );
 
   // Code blocks - use semantic background and text colors
   styledHTML = styledHTML.replace(
     /<code([^>]*)>/g,
-    `<code$1 class="${styles.container.background} ${styles.colors.text} px-2 py-1 rounded text-sm font-mono opacity-80">`
+    (match, attrs) => `<code${mergeClasses(attrs, `${styles.container.background} ${styles.colors.text} px-2 py-1 rounded text-sm font-mono opacity-80`)}>`
   );
 
   // Blockquotes with semantic border and muted text
   styledHTML = styledHTML.replace(
     /<blockquote([^>]*)>/g,
-    `<blockquote$1 class="border-l-4 ${styles.colors.border} ${styles.colors.textMuted} pl-4 italic my-4">`
+    (match, attrs) => `<blockquote${mergeClasses(attrs, `border-l-4 ${styles.colors.border} ${styles.colors.textMuted} pl-4 italic my-4`)}>`
   );
 
   // Strong/bold text
   styledHTML = styledHTML.replace(
     /<strong([^>]*)>/g,
-    `<strong$1 class="font-bold ${styles.colors.text}">`
+    (match, attrs) => `<strong${mergeClasses(attrs, `font-bold ${styles.colors.text}`)}>`
   );
 
   // Emphasis/italic text
   styledHTML = styledHTML.replace(
     /<em([^>]*)>/g,
-    `<em$1 class="italic ${styles.colors.text}">`
+    (match, attrs) => `<em${mergeClasses(attrs, `italic ${styles.colors.text}`)}>`
   );
 
   // Links - using semantic interactive styles
   styledHTML = styledHTML.replace(
     /<a([^>]*)>/g,
-    `<a$1 class="${styles.interactive.link} hover:underline">`
+    (match, attrs) => `<a${mergeClasses(attrs, `${styles.interactive.link} hover:underline`)}>`
   );
 
   return styledHTML;

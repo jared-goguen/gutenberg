@@ -66,6 +66,25 @@ export function renderButton(
 }
 
 /**
+ * Deduplicates CSS utility classes, keeping only the first occurrence
+ * e.g., "py-24 py-24 md:py-32 bg-blue-500 bg-blue-500" → "py-24 md:py-32 bg-blue-500"
+ */
+function deduplicateClasses(classString: string): string {
+  const classes = classString.split(/\s+/);
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const cls of classes) {
+    if (!seen.has(cls)) {
+      result.push(cls);
+      seen.add(cls);
+    }
+  }
+
+  return result.join(" ");
+}
+
+/**
  * Render a semantic container (wrapper div with styles)
  */
 export function renderContainer(
@@ -98,7 +117,10 @@ export function renderContainer(
     mx-auto px-4 md:px-6 lg:px-8
   `.trim().replace(/\s+/g, " ");
 
-  return `<section${idAttr} class="${classes}">${content}</section>`;
+  // Deduplicate classes to remove redundant utility classes
+  const deduplicatedClasses = deduplicateClasses(classes);
+
+  return `<section${idAttr} class="${deduplicatedClasses}">${content}</section>`;
 }
 
 /**
