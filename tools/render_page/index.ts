@@ -41,6 +41,21 @@ export async function handler(input: Record<string, unknown>) {
 
   const html = renderDocument(page.page.meta, body, renderOptions);
 
+  // Validate HTML output - catch undefined or malformed content early
+  if (!html || typeof html !== "string" || html.includes("<undefined>")) {
+    throw new Error(
+      `Rendering produced invalid HTML. This usually means a component returned undefined. ` +
+      `Check your page spec and component implementations. HTML content: ${String(html).substring(0, 200)}`
+    );
+  }
+
+  if (html.length < 100) {
+    throw new Error(
+      `Rendered HTML is suspiciously small (${html.length} bytes). ` +
+      `Expected at least 100 bytes. This may indicate a rendering failure.`
+    );
+  }
+
   // Write HTML to disk
   await fs.mkdir(output_dir, { recursive: true });
   
