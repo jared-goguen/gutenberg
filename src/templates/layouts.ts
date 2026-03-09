@@ -1,5 +1,5 @@
 import { PageLayout } from "../types.js";
-import type { ThemeSpec } from "../theme.js";
+import type { ThemeSpec } from "chromata";
 
 /**
  * Get layout-specific CSS classes

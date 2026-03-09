@@ -67,7 +67,7 @@ page:
 
 ## Available Tools
 
-Gutenberg provides 5 MCP tools:
+Gutenberg provides 11 MCP tools:
 
 ### 1. `render_page`
 
@@ -128,6 +128,126 @@ Generate a Tailwind CSS theme configuration.
 **Output:**
 - `theme` (object): Theme configuration
 - `tailwindConfig` (string): Complete tailwind.config.js content
+
+### 6. `snapshot_page`
+
+Render a page spec, deploy to Cloudflare Pages preview, and capture a screenshot for visual QA.
+
+**Input:**
+- `spec_path` (string): Absolute path to page specification YAML file
+- `project_name` (string): Cloudflare Pages project name for preview
+- `viewport` (optional): viewport dimensions {width, height}
+- `full_page` (optional): Capture entire scrollable page (default: true)
+
+**Output:**
+- `snapshot_path` (string): Local path to PNG screenshot
+- `preview_url` (string): Live preview URL on Cloudflare Pages
+- `dimensions` (object): Actual page dimensions {width, height}
+- `timestamp` (string): ISO 8601 timestamp
+
+### 7. `list_projects`
+
+List all Cloudflare Pages projects for the configured account.
+
+**Output:**
+- Array of project objects with name, subdomain, production branch, creation date
+
+### 8. `create_project`
+
+Create a new Cloudflare Pages project.
+
+**Input:**
+- `name` (string, required): Project name (lowercase alphanumeric and hyphens)
+- `production_branch` (string, optional): Git branch to deploy (defaults to "main")
+
+**Output:**
+- Project object with configuration
+
+### 9. `deploy_html`
+
+Deploy HTML and static files to a Cloudflare Pages project.
+
+**Input:**
+- `project_name` (string, required): Target project name
+- `files` (object, required): Map of file paths to file contents
+- `branch` (string, optional): Branch name for preview deployments
+
+**Output:**
+- Deployment result with status and URL
+
+### 10. `list_deployments`
+
+List all deployments for a Cloudflare Pages project.
+
+**Input:**
+- `project_name` (string, required): Pages project name
+
+**Output:**
+- Array of deployment objects with status, environment, aliases
+
+### 11. `get_deployment`
+
+Get details for a specific Cloudflare Pages deployment.
+
+**Input:**
+- `project_name` (string, required): Pages project name
+- `deployment_id` (string, required): Deployment ID
+
+**Output:**
+- Complete deployment object with status, environment, and build stages
+
+## Cloudflare Pages Integration
+
+Gutenberg includes tools for deploying pages to Cloudflare Pages and testing them visually:
+
+### Configuration
+
+The CF Pages tools require two environment variables:
+- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
+- `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
+
+### Visual QA Workflow
+
+Test rendered pages before production deployment:
+
+```bash
+# 1. Render your spec to HTML
+gutenberg_render_page(schema: <your-spec>, options: {...})
+
+# 2. Create a preview deployment
+gutenberg_snapshot_page(
+  spec_path: "/path/to/spec.yaml",
+  project_name: "my-pages-project"
+)
+
+# Returns:
+# {
+#   snapshot_path: "/path/to/snapshot-2026-03-07.png",
+#   preview_url: "https://snapshot-spec-2026-03-07.my-pages-project.pages.dev/",
+#   dimensions: { width: 1440, height: 2048 },
+#   timestamp: "2026-03-07T12:34:56.000Z"
+# }
+```
+
+The snapshot tool:
+1. Renders your spec to HTML (using direct Gutenberg rendering)
+2. Deploys to a preview branch on CF Pages
+3. Captures a full-page screenshot with Puppeteer
+4. Returns the screenshot path and live preview URL
+
+### Publishing Workflow
+
+Use Flowbot to orchestrate a complete publish workflow:
+
+```bash
+flowbot_start_flow("/path/to/gutenberg/flows/publish.yaml")
+```
+
+The `publish-page` flow manages:
+1. **Draft** → Validate schema
+2. **Validated** → Render to HTML
+3. **Rendered** → Deploy to CF Pages
+4. **Published** → Terminal state (live in production)
 
 ## Component Library
 

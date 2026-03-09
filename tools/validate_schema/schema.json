@@ -2,36 +2,43 @@
   "input": {
     "type": "object",
     "properties": {
-      "schema": {
-        "description": "Page schema to validate as a YAML string or a plain object.",
-        "oneOf": [
-          { "type": "string", "description": "YAML string" },
-          { "type": "object", "description": "Plain JS object" }
-        ]
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file to validate. Must be valid YAML with required 'page' root key.",
+        "x-semantic-type": "GutenbergSpecPath"
       }
     },
-    "required": ["schema"],
+    "required": ["spec_path"],
     "additionalProperties": false
   },
   "output": {
     "type": "object",
     "properties": {
-      "valid": { "type": "boolean", "description": "True if schema has no blocking errors" },
+      "valid": { 
+        "type": "boolean",
+        "description": "True if spec has no blocking validation errors and can be safely rendered"
+      },
       "errors": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "path": { "type": "string" },
-            "message": { "type": "string" }
+            "path": { 
+              "type": "string",
+              "description": "JSON path to error location (e.g., 'page.sections[0].type')"
+            },
+            "message": { 
+              "type": "string",
+              "description": "Detailed error message explaining what's wrong and how to fix it"
+            }
           }
         },
-        "description": "Blocking validation errors"
+        "description": "Blocking validation errors that prevent rendering. Fix these before calling render_page."
       },
       "warnings": {
         "type": "array",
         "items": { "type": "string" },
-        "description": "Non-blocking suggestions"
+        "description": "Non-blocking suggestions for improvement (missing SEO metadata, accessibility, etc.)"
       }
     }
   }

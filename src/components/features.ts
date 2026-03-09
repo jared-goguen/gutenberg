@@ -113,7 +113,7 @@ function renderFeaturesList(
   // List items
   const items = section.items
     .map((item) => {
-      const icon = item.icon ? `<div class="text-4xl mr-6">${renderIconEmoji(item.icon)}</div>` : "";
+      const icon = item.icon ? `<div class="mr-6 ${styles.colors.accent}">${renderIcon(item.icon, { className: "w-12 h-12" })}</div>` : "";
       const link = item.link
         ? `<a href="${escapeHTML(item.link)}" class="${styles.interactive.link} text-sm font-medium mt-2 inline-block">Learn more →</a>`
         : "";
@@ -157,7 +157,7 @@ function renderFeatureItem(
   styles: SemanticStyles
 ): string {
   const iconHTML = item.icon
-    ? `<div class="mb-4 text-3xl">${renderIconEmoji(item.icon)}</div>`
+    ? `<div class="mb-4 ${styles.colors.accent}">${renderIcon(item.icon, { className: "w-10 h-10" })}</div>`
     : "";
 
   const linkHTML = item.link
@@ -175,34 +175,6 @@ function renderFeatureItem(
 }
 
 /**
- * Map icon names to emoji
+ * Import SVG icon rendering
  */
-function renderIconEmoji(icon: string): string {
-  const icons: Record<string, string> = {
-    rocket: "🚀",
-    shield: "🛡️",
-    star: "⭐",
-    heart: "❤️",
-    check: "✓",
-    bolt: "⚡",
-    globe: "🌍",
-    lock: "🔒",
-    search: "🔍",
-    chart: "📊",
-    code: "💻",
-    mobile: "📱",
-    cloud: "☁️",
-    database: "🗄️",
-    api: "🔌",
-    users: "👥",
-    settings: "⚙️",
-    dollar: "💰",
-    layout: "🗂️",
-    grid: "📐",
-    megaphone: "📢",
-    document: "📄",
-    link: "🔗",
-  };
-
-  return icons[icon] || icon;
-}
+import { renderIcon } from "../icons.js";

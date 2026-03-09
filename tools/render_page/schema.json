@@ -2,32 +2,28 @@
   "input": {
     "type": "object",
     "properties": {
-      "schema": {
-        "description": "Page schema as a YAML string or a plain object. Must have a 'page.sections' array.",
-        "oneOf": [
-          { "type": "string", "description": "YAML string" },
-          { "type": "object", "description": "Plain JS object" }
-        ]
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file. Must pass validation (valid=true from validate_schema).",
+        "x-semantic-type": "GutenbergSpecPath"
       },
-      "options": {
-        "type": "object",
-        "description": "Optional render options",
-        "properties": {
-          "minify": { "type": "boolean", "description": "Minify HTML output", "default": false },
-          "includeComments": { "type": "boolean", "description": "Include HTML comments", "default": true },
-          "tailwindCDN": { "type": "boolean", "description": "Include Tailwind CSS CDN link", "default": true },
-          "indentSize": { "type": "number", "description": "Spaces per indent level", "default": 2 }
-        },
-        "additionalProperties": false
+      "output_dir": {
+        "type": "string",
+        "description": "Optional: Directory to write rendered HTML. Defaults to pages/rendered/. Directory is created if it doesn't exist.",
+        "x-semantic-type": "DirectoryPath"
       }
     },
-    "required": ["schema"],
+    "required": ["spec_path"],
     "additionalProperties": false
   },
   "output": {
     "type": "object",
     "properties": {
-      "html": { "type": "string", "description": "Complete rendered HTML document" }
+      "html_path": { 
+        "type": "string",
+        "description": "Absolute path to the rendered HTML file. File is ready for deployment or further processing (screenshots, QA, etc.). All CSS is embedded (no external CDN).",
+        "x-semantic-type": "HTMLFilePath"
+      }
     }
   }
 }

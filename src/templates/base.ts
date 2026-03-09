@@ -1,7 +1,8 @@
 import { PageMeta, RenderOptions } from "../types.js";
 import { h, selfClosing, renderHTML } from "../renderer.js";
-import type { ThemeSpec } from "../theme.js";
-import { resolveThemeSpec } from "../color.js";
+import type { ThemeSpec } from "chromata";
+import { resolveThemeSpec } from "chromata";
+import { generateUtilityCSS } from "../css-generator.js";
 
 /**
  * Generate complete HTML document
@@ -14,7 +15,6 @@ export function renderDocument(
   const title = meta?.title || "Untitled Page";
   const description = meta?.description || "";
   const language = meta?.language || "en";
-  const tailwindCDN = options.tailwindCDN !== false;
 
   // Resolve theme and generate CSS variables + utility classes
   const theme = options.theme;
@@ -46,38 +46,37 @@ export function renderDocument(
     description ? selfClosing("meta", { name: "twitter:description", content: description }) : "",
     meta?.ogImage ? selfClosing("meta", { name: "twitter:image", content: meta.ogImage }) : "",
     
-    // Tailwind CSS
-    tailwindCDN ? h("script", { src: "https://cdn.tailwindcss.com" }, "") : "",
-    
     // Custom styles (theme CSS vars + utility classes + default styles)
     h("style", null, `
-      ${themeCSS}
-      
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 10px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #f1f1f1;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 5px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #555;
-      }
-      
-      /* Smooth scroll */
-      html {
-        scroll-behavior: smooth;
-      }
-      
-      /* Focus visible */
-      *:focus-visible {
-        outline: 2px solid var(--color-primary, #3b82f6);
-        outline-offset: 2px;
-      }
+${themeCSS}
+
+${theme ? generateUtilityCSS(theme) : ""}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus visible */
+*:focus-visible {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 2px;
+}
     `)
   );
 

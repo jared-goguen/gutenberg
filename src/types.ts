@@ -152,12 +152,11 @@ export interface ValidationError {
 
 // Render options
 
-import type { ThemeSpec } from "./theme.js";
+import type { ThemeSpec } from "chromata";
 
 export interface RenderOptions {
   minify?: boolean;
   includeComments?: boolean;
-  tailwindCDN?: boolean;
   indentSize?: number;
   theme?: ThemeSpec;
 }

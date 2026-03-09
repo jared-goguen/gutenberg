@@ -5,15 +5,20 @@
   "main": "src/index.js",
   "scripts": {
     "start": "bun run src/index.ts",
-    "test": "bun test"
+    "test": "bun test",
+    "build": "tsc"
   },
   "dependencies": {
+    "mcp-core": "*",
+    "chromata": "*",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "culori": "^4.0.0",
     "marked": "^12.0.0",
+    "puppeteer": "^21.0.0",
     "yaml": "^2.4.0"
   },
   "devDependencies": {
+    "mcp-test-utils": "*",
     "@types/bun": "latest",
     "@types/marked": "^6.0.0",
     "typescript": "^5.0.0"

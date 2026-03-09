@@ -1,0 +1,43 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "html_path": {
+        "type": "string",
+        "description": "Absolute path to rendered HTML file. Must be valid HTML output from render_page. File is read from disk and rendered in headless Chromium.",
+        "x-semantic-type": "HTMLFilePath"
+      },
+      "output_dir": {
+        "type": "string",
+        "description": "Optional: Directory to write screenshot PNG. Defaults to pages/snapshots/. Directory is created if it doesn't exist.",
+        "x-semantic-type": "DirectoryPath"
+      },
+      "width": {
+        "type": "number",
+        "description": "Browser viewport width in pixels for rendering. Default 1440 (desktop). Use 375 for mobile preview.",
+        "default": 1440,
+        "minimum": 320,
+        "maximum": 3840
+      },
+      "height": {
+        "type": "number",
+        "description": "Browser viewport height in pixels. Default 900. Full page is always captured vertically.",
+        "default": 900,
+        "minimum": 320,
+        "maximum": 2160
+      }
+    },
+    "required": ["html_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "image_path": {
+        "type": "string",
+        "description": "Absolute path to the full-page screenshot PNG file. Ready for QA, visual regression testing, or documentation.",
+        "x-semantic-type": "ImageFilePath"
+      }
+    }
+  }
+}

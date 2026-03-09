@@ -33,17 +33,28 @@ src/
     layouts.ts      # applyLayout() — wraps content with layout/theme div
                     # getLayoutClasses() — resolves layout type + theme to CSS classes
 tools/              # convention-based MCP tools (auto-discovered)
-  render_page/      # parse schema → render all sections → apply layout → renderDocument
-  validate_schema/  # parse schema → validateSchema → return errors + warnings
-  list_components/  # getComponentList → return all component types and variants
-  preview_component/# render single section + wrap in document (for isolated preview)
-  generate_theme/   # generate theme object + tailwind.config.js string
+   render_page/      # parse schema → render all sections → apply layout → renderDocument
+   validate_schema/  # parse schema → validateSchema → return errors + warnings
+   list_components/  # getComponentList → return all component types and variants
+   preview_component/# render single section + wrap in document (for isolated preview)
+   generate_theme/   # generate theme object + tailwind.config.js string
+   snapshot_page/    # render spec → deploy to CF Pages preview → screenshot (visual QA)
+   deploy_html/      # deploy rendered files to CF Pages with hash-based manifest [SEE BELOW]
+   list_projects/    # list all CF Pages projects for account
+   create_project/   # create new CF Pages project
+   list_deployments/ # list deployments for CF Pages project
+   get_deployment/   # get details for specific CF Pages deployment
 tests/
   helpers/          # server subprocess harness (spawnServer), temp dir helpers
   integration/      # full-stack tests through stdio transport
+flows/
+   publish.yaml      # Flowbot state machine: draft → validated → rendered → published
+   instances/        # runtime flow instances (git-ignored)
 examples/
-  landing-page.yaml # SaaS landing page example
-  docs-page.yaml    # Documentation page example
+   landing-page.yaml # SaaS landing page example
+   docs-page.yaml    # Documentation page example
+src/
+   cf.ts             # Cloudflare API helpers (getConfig, cfFetch)
 ```
 
 ## Key Conventions
@@ -54,7 +65,7 @@ examples/
 - The first exported function in each `index.ts` becomes the tool handler
 - `purpose.md` first line is the MCP tool description shown to clients
 - `schema.json` `input` key is passed directly to `tools/list` as `inputSchema`
-- No environment variables needed — gutenberg has no external API dependencies
+- Environment variables needed for CF Pages tools: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`
 
 ## Page Schema Format
 
@@ -95,3 +106,71 @@ page:
 4. Add the component metadata to `getComponentList()` in `src/components/index.ts`
 5. Add validation in `src/validator.ts` `validateSection()` switch case
 6. Add default variant to `normalizeSection()` in `src/parser.ts`
+
+## Integration with Cloudflare Pages
+
+**Gutenberg + Cloudflare = Complete Publishing Pipeline**
+
+Gutenberg renders page specs to HTML. Cloudflare Pages deploys them globally.
+
+### The Deploy Flow
+
+```
+Page Spec (YAML)
+    ↓
+[gutenberg_render_page]  ← Parse + render + apply theme
+    ↓
+HTML Output
+    ↓
+[gutenberg_deploy_html]  ← Read from directory + upload to CF Pages
+    ↓
+Live at https://<id>.pages.dev
+```
+
+### Using deploy_html Tool
+
+**Two modes** supported:
+
+**Mode 1: Files Parameter** (small batches)
+```
+gutenberg_deploy_html(
+  project_name="my-site",
+  files={"/index.html": "...", "/about.html": "..."}
+)
+```
+
+**Mode 2: Directory Parameter** (batch rendering) ✓ RECOMMENDED
+```
+gutenberg_deploy_html(
+  project_name="my-site",
+  directory="/path/to/rendered/pages"
+)
+```
+
+The directory mode recursively reads all files from disk, avoiding MCP parameter size limits. Perfect for deploying entire rendered output directories.
+
+### How It Works
+
+The `deploy_html` tool:
+1. Accepts either inline files or a directory path
+2. Computes MD5 hashes for all files
+3. Uploads to Cloudflare with manifest-based deduplication
+4. Creates a deployment (returns deployment ID + live URL)
+
+**Result:** All files uploaded atomically. Fast, reliable, idempotent.
+
+### Required Credentials
+
+Set these environment variables:
+- `CLOUDFLARE_ACCOUNT_ID` — Your account ID
+- `CLOUDFLARE_API_TOKEN` — API token with Pages write access
+
+### Why This Architecture Works
+
+- **Separation of Concerns**: Gutenberg renders, Cloudflare deploys
+- **Rosetta Discovery**: Agents see the full pipeline (render + deploy)
+- **No MCP Size Limits**: Directory mode reads from disk, not parameters
+- **Direct API**: Uses Cloudflare's manifest-based upload (what Wrangler uses internally)
+- **Integrated**: All tools discoverable in `rosetta.schema.json`
+
+**Agents naturally know:** render a page spec → deploy the output → get a live URL.

@@ -166,9 +166,12 @@ function renderHeroFullBleed(
       ? [content.cta]
       : [];
 
-  // For full-bleed, use white text over dark background
-  const textColorClass = "text-white";
-  const mutedColorClass = "text-gray-200";
+  // For full-bleed, adapt text colors based on theme
+  // Light theme: white text over dark overlay
+  // Dark theme: dark text over light overlay
+  const isDarkTheme = options.theme?.name.toLowerCase() === "dark";
+  const textColorClass = isDarkTheme ? "text-neutral-900" : "text-white";
+  const mutedColorClass = isDarkTheme ? "text-neutral-700" : "text-gray-200";
 
   const backgroundStyle = content.backgroundImage
     ? `background-image: url('${escapeHTML(content.backgroundImage)}');`
@@ -192,14 +195,17 @@ function renderHeroFullBleed(
 
   const ctaButtons = ctas.length
     ? `<div class="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-        ${ctas.map((cta) => renderFullBleedButton(cta)).join("\n")}
+        ${ctas.map((cta) => renderFullBleedButton(cta, isDarkTheme)).join("\n")}
       </div>`
     : "";
+
+  // For dark theme, use lighter overlay so dark text is visible
+  const overlayOpacity = isDarkTheme ? "bg-opacity-30" : "bg-opacity-50";
 
   const innerContent = `
     <div class="relative min-h-screen bg-cover bg-center flex items-center justify-center ${content.backgroundImage ? "bg-cover" : "bg-gradient-to-br from-primary-600 to-primary-900"}"
          ${backgroundStyle ? `style="${backgroundStyle}"` : ""}>
-      <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+      <div class="absolute inset-0 bg-${isDarkTheme ? "white" : "black"} ${overlayOpacity}"></div>
       <div class="relative z-10 text-center max-w-4xl mx-auto px-4">
         ${heading}
         ${subheading}
@@ -216,13 +222,20 @@ function renderHeroFullBleed(
 /**
  * Render a CTA button styled for full-bleed (white/contrasting)
  */
-function renderFullBleedButton(cta: CTA): string {
+function renderFullBleedButton(cta: CTA, isDarkTheme: boolean = false): string {
   const variant = cta.variant || "primary";
-  const variantClasses = {
+  
+  // Light theme: white/light buttons
+  // Dark theme: dark/neutral buttons
+  const variantClasses = isDarkTheme ? {
+    primary: "bg-neutral-900 text-white hover:bg-neutral-800",
+    secondary: "bg-neutral-200 text-neutral-900 hover:bg-neutral-300 border-2 border-neutral-200",
+    outline: "border-2 border-neutral-900 text-neutral-900 hover:bg-neutral-900 hover:text-white",
+    ghost: "text-neutral-900 hover:bg-neutral-900 hover:bg-opacity-10",
+  } : {
     primary: "bg-white text-gray-900 hover:bg-gray-100",
     secondary: "bg-gray-800 text-white hover:bg-gray-700 border-2 border-gray-800",
-    outline:
-      "border-2 border-white text-white hover:bg-white hover:text-gray-900",
+    outline: "border-2 border-white text-white hover:bg-white hover:text-gray-900",
     ghost: "text-white hover:bg-white hover:bg-opacity-10",
   };
 
