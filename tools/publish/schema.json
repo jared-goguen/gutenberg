@@ -1,0 +1,36 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "project_path": {
+        "type": "string",
+        "description": "Absolute path to gutenberg.yaml project configuration file.",
+        "x-semantic-type": "ProjectPath"
+      },
+      "branch": {
+        "type": "string",
+        "description": "Optional preview branch name for staging deployments."
+      }
+    },
+    "required": ["project_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "description": "Deployment ID"
+      },
+      "url": {
+        "type": "string",
+        "description": "Live deployment URL",
+        "x-semantic-type": "CloudflareURL"
+      },
+      "project_name": {
+        "type": "string",
+        "description": "Cloudflare Pages project name"
+      }
+    }
+  }
+}

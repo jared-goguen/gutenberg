@@ -1,0 +1,103 @@
+import { promises as fs } from "fs";
+import { dirname, basename } from "path";
+import {
+  parseProjectConfig,
+  discoverPages,
+  buildNavStructure,
+  getRenderedDir,
+  getArtifactPath,
+} from "../../src/project.js";
+import { lint, scaffold, enrich, style } from "../../src/pipeline/index.js";
+import type { PageSchema } from "../../src/types.js";
+import type { AnnotatedNode } from "../../src/scaffold/node.js";
+
+export async function handler(input: Record<string, unknown>) {
+  const project_path = input.project_path as string;
+
+  if (!project_path) {
+    throw new Error("'project_path' is required - provide an absolute path to gutenberg.yaml");
+  }
+
+  const config = await parseProjectConfig(project_path);
+  const projectRoot = dirname(project_path);
+  const renderedDir = await getRenderedDir(project_path);
+  const pages = await discoverPages(project_path);
+
+  if (pages.length === 0) {
+    throw new Error(`No page specs found in project at ${projectRoot}`);
+  }
+
+  await fs.mkdir(renderedDir, { recursive: true });
+
+  // FIRST PASS: lint all pages to gather titles for nav
+  console.error(`[build] Linting ${pages.length} pages...`);
+  for (const spec_path of pages) {
+    const lint_path = await getArtifactPath(spec_path, "lint");
+    await fs.mkdir(dirname(lint_path), { recursive: true });
+
+    const yamlContent = await fs.readFile(spec_path, "utf8");
+    const lintOutput = lint(yamlContent);
+
+    await fs.writeFile(
+      lint_path,
+      JSON.stringify({ schema: lintOutput.schema, result: lintOutput.result }, null, 2),
+      "utf8"
+    );
+  }
+
+  // Build navigation from all page titles
+  console.error(`[build] Building navigation structure...`);
+  const nav = await buildNavStructure(pages, projectRoot);
+
+  // SECOND PASS: scaffold → enrich → style each page
+  console.error(`[build] Rendering ${pages.length} pages...`);
+  const results: Array<{ spec_path: string; html_path: string; title: string }> = [];
+
+  for (const spec_path of pages) {
+    const lint_path = await getArtifactPath(spec_path, "lint");
+    const scaffold_path = await getArtifactPath(spec_path, "scaffold");
+    const enrich_path = await getArtifactPath(spec_path, "enrich");
+    const html_path = await getArtifactPath(spec_path, "html");
+
+    const lintData = JSON.parse(await fs.readFile(lint_path, "utf8"));
+    let schema = lintData.schema as PageSchema;
+
+    // Inject cross-page navigation (only when multi-page)
+    if (!schema.page.sections) schema.page.sections = [];
+    const navSectionIndex = schema.page.sections.findIndex(s => s.type === "navigation");
+    const currentHref = nav.find(link => {
+      const specName = basename(spec_path, ".yaml");
+      return link.href === `/${specName}` || link.href === "/" || link.href.endsWith(`/${specName}`);
+    })?.href;
+    const filteredNav = nav.filter(link => link.href !== currentHref);
+
+    if (navSectionIndex >= 0 && filteredNav.length > 0) {
+      schema.page.sections[navSectionIndex].links = filteredNav.map(l => ({ text: l.text, href: l.href }));
+    } else if (navSectionIndex < 0 && filteredNav.length > 0) {
+      schema.page.sections.unshift({ type: "navigation" as const, links: filteredNav.map(l => ({ text: l.text, href: l.href })) });
+    }
+
+    // SCAFFOLD
+    const renderNodes = scaffold(schema);
+    await fs.writeFile(scaffold_path, JSON.stringify({ spec_name: basename(spec_path, ".yaml"), nodes: renderNodes }, null, 2), "utf8");
+
+    // ENRICH
+    const annotatedNodes = enrich(renderNodes);
+    await fs.writeFile(enrich_path, JSON.stringify({ spec_name: basename(spec_path, ".yaml"), nodes: annotatedNodes }, null, 2), "utf8");
+
+    // STYLE
+    const html = style(annotatedNodes as AnnotatedNode[], schema.page.meta, { minify: false, indentSize: 2 });
+    await fs.writeFile(html_path, html, "utf8");
+
+    results.push({ spec_path, html_path, title: schema.page.meta?.title || basename(spec_path, ".yaml") });
+  }
+
+  console.error(`[build] Build complete: ${results.length} pages rendered`);
+
+  return {
+    content: [{
+      type: "text" as const,
+      text: JSON.stringify({ project_name: config.project.name, rendered_dir: renderedDir, pages: results }),
+    }],
+  };
+}

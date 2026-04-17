@@ -1,0 +1,40 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "project_path": {
+        "type": "string",
+        "description": "Absolute path to gutenberg.yaml project configuration file.",
+        "x-semantic-type": "ProjectPath"
+      }
+    },
+    "required": ["project_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "project_name": {
+        "type": "string",
+        "description": "Cloudflare Pages project name from config"
+      },
+      "rendered_dir": {
+        "type": "string",
+        "description": "Directory containing all rendered HTML files",
+        "x-semantic-type": "DirectoryPath"
+      },
+      "pages": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "spec_path": { "type": "string" },
+            "html_path": { "type": "string" },
+            "title": { "type": "string" }
+          }
+        },
+        "description": "List of all pages that were rendered"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file.",
+        "x-semantic-type": "GutenbergSpecPath"
+      }
+    },
+    "required": ["spec_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "html_path": {
+        "type": "string",
+        "description": "Path to rendered {name}.html file with all CSS embedded.",
+        "x-semantic-type": "HTMLFilePath"
+      },
+      "theme": {
+        "type": "string",
+        "description": "Theme used for rendering (ink)"
+      },
+      "bytes": {
+        "type": "integer",
+        "description": "Size of rendered HTML in bytes"
+      }
+    }
+  }
+}

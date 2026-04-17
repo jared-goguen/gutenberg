@@ -1,0 +1,1282 @@
+{
+  "spec_name": "_index",
+  "nodes": [
+    {
+      "tag": "div",
+      "role": "docs-shell",
+      "attrs": {},
+      "children": [
+        {
+          "tag": "aside",
+          "role": "docs-sidebar",
+          "attrs": {},
+          "children": [
+            {
+              "tag": "nav",
+              "role": "nav-root",
+              "attrs": {},
+              "semantic": {
+                "vibe": "steady",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "standard",
+                    "flex": "true",
+                    "justify": "between",
+                    "items": "center"
+                  },
+                  "children": [
+                    {
+                      "tag": "a",
+                      "role": "nav-logo",
+                      "attrs": {
+                        "href": "/"
+                      },
+                      "children": [
+                        "Gutenberg"
+                      ],
+                      "classes": [
+                        "nav-logo"
+                      ]
+                    },
+                    {
+                      "tag": "div",
+                      "attrs": {},
+                      "layout": {
+                        "flex": "true",
+                        "gap": "sm"
+                      },
+                      "children": [],
+                      "classes": [
+                        "flex",
+                        "gap-sm"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-standard",
+                    "flex",
+                    "justify-between",
+                    "items-center"
+                  ]
+                }
+              ],
+              "classes": [
+                "nav-root",
+                "vibe-steady",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            }
+          ],
+          "classes": [
+            "docs-sidebar"
+          ]
+        },
+        {
+          "tag": "main",
+          "role": "docs-main",
+          "attrs": {},
+          "children": [
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "overview"
+              },
+              "layout": {
+                "variant": "centered"
+              },
+              "semantic": {
+                "vibe": "gentle",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "narrow",
+                    "align": "center"
+                  },
+                  "children": [
+                    {
+                      "tag": "p",
+                      "role": "section-overline",
+                      "attrs": {},
+                      "children": [
+                        "Content Platform"
+                      ],
+                      "classes": [
+                        "section-overline"
+                      ]
+                    },
+                    {
+                      "tag": "h1",
+                      "role": "hero-heading",
+                      "attrs": {},
+                      "children": [
+                        "State of the Art"
+                      ],
+                      "classes": [
+                        "hero-heading"
+                      ]
+                    },
+                    {
+                      "tag": "p",
+                      "role": "hero-body",
+                      "attrs": {},
+                      "children": [
+                        "A semantic pipeline that turns YAML specs into production-ready HTML. Five deterministic stages. Zero runtime dependencies. One tool call to deploy."
+                      ],
+                      "classes": [
+                        "hero-body"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-narrow",
+                    "align-center"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-gentle",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "metrics"
+              },
+              "semantic": {
+                "vibe": "steady",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "standard"
+                  },
+                  "children": [
+                    {
+                      "tag": "h2",
+                      "role": "section-heading",
+                      "attrs": {},
+                      "children": [
+                        "Key Metrics"
+                      ],
+                      "classes": [
+                        "section-heading"
+                      ]
+                    },
+                    {
+                      "tag": "p",
+                      "attrs": {},
+                      "children": [
+                        "These are the numbers that define the pipeline's health. Some are measured from production data. Others are asserted from code analysis. The distinction matters."
+                      ],
+                      "classes": []
+                    },
+                    {
+                      "tag": "div",
+                      "attrs": {},
+                      "layout": {
+                        "columns": "2"
+                      },
+                      "children": [
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "5 pipeline stages"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "LINT → SCAFFOLD → ENRICH → STYLE → SNAPSHOT. Each stage is independent, testable, and produces a diffable artifact on disk."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Zero runtime dependencies"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Output is a single .html file with all CSS embedded. No JavaScript, no CDN, no build tools required at runtime."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "12 / 12 tests passing"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Full integration test suite covers all 5 pipeline stages. Status — measured. Threshold — green."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "1 theme, infinite pages"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "The ink theme applies to any content structure via semantic roles. Same CSS, any content, always correct."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Convention over config"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Drop a YAML file in the project directory. Navigation is auto-injected. Output paths are derived. Nothing to wire."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Cloudflare Pages deploy"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "One tool call deploys every page as a single project. MD5-based deduplication — only changed files are uploaded."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        }
+                      ],
+                      "classes": [
+                        "layout-2col"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-standard"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-steady",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "pipeline"
+              },
+              "layout": {
+                "variant": "narrow"
+              },
+              "semantic": {
+                "vibe": "gentle",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "narrow",
+                    "align": "left"
+                  },
+                  "children": [
+                    {
+                      "tag": "div",
+                      "role": "content-prose",
+                      "attrs": {},
+                      "rawHtml": "<h2>Pipeline Architecture</h2>\n<p>Each stage is a pure function with a defined input and output artifact. Stages are independently runnable and produce diffable output on disk.</p>\n<ol>\n<li><strong>LINT</strong> — Parse YAML into a typed <code>PageSchema</code>. Validate required fields, section types, and semantic axes. Returns structured errors and warnings.</li>\n<li><strong>SCAFFOLD</strong> — Walk the schema and build a classless <code>RenderNode</code> tree. Each component has a dedicated <code>.data.ts</code> extractor and <code>.scaffold.ts</code> builder.</li>\n<li><strong>ENRICH</strong> — Resolve semantic roles (<code>hero-heading</code>, <code>btn-primary</code>, <code>feature-card</code>) and layout hints (<code>layout-3col</code>, <code>width-narrow</code>) into CSS class names via the enricher map.</li>\n<li><strong>STYLE</strong> — Generate theme CSS and serialize the <code>AnnotatedNode</code> tree to complete HTML. Inlines everything into a single <code>&lt;style&gt;</code> block — no external requests except opted-in web fonts.</li>\n<li><strong>SNAPSHOT</strong> — Capture a full-page screenshot using headless Chromium for visual regression testing and deployment previews.</li>\n</ol>\n<p>Every stage writes its artifact to <code>rendered/</code>. Intermediate outputs are inspectable, diffable, and independently reproducible. Run any stage in isolation with its MCP tool.</p>\n",
+                      "children": [],
+                      "classes": [
+                        "content-prose"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-narrow",
+                    "align-left"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-gentle",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "components"
+              },
+              "semantic": {
+                "vibe": "steady",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "standard"
+                  },
+                  "children": [
+                    {
+                      "tag": "h2",
+                      "role": "section-heading",
+                      "attrs": {},
+                      "children": [
+                        "Components"
+                      ],
+                      "classes": [
+                        "section-heading"
+                      ]
+                    },
+                    {
+                      "tag": "p",
+                      "attrs": {},
+                      "children": [
+                        "Six section types cover the full surface area of a content page. Each has typed variants, semantic axes, and a dedicated scaffold."
+                      ],
+                      "classes": []
+                    },
+                    {
+                      "tag": "div",
+                      "attrs": {},
+                      "layout": {
+                        "columns": "3"
+                      },
+                      "children": [
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Hero"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Full-bleed or centered headline sections. Supports overline, heading, subheading, and CTA button groups. Variants — centered, split, full-bleed."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Features"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Grid layouts for capability lists, metrics, or comparisons. Material cards or accent-border style. Variants — grid-2, grid-3, grid-4, list."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Content"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Markdown prose with full typographic support — headings, ordered and unordered lists, inline code, code blocks, tables, blockquotes. Variants — prose, narrow, wide."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "CTA"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Conversion sections with heading, supporting copy, and one or more action buttons. Variants — centered, split, banner."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Navigation"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Cross-page nav rendered into the left sidebar in docs layout, or a sticky top bar in standard layouts. Supports logo, links, and a CTA button."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "Footer"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Page footer with logo, link groups, social links, and copyright. Variants — simple, detailed, newsletter."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        }
+                      ],
+                      "classes": [
+                        "layout-3col"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-standard"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-steady",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "deploy"
+              },
+              "layout": {
+                "variant": "narrow"
+              },
+              "semantic": {
+                "vibe": "gentle",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "narrow",
+                    "align": "left"
+                  },
+                  "children": [
+                    {
+                      "tag": "div",
+                      "role": "content-prose",
+                      "attrs": {},
+                      "rawHtml": "<h2>Deploy</h2>\n<p>Gutenberg deploys to Cloudflare Pages via direct upload. A project is defined by a single <code>gutenberg.yaml</code> file. All <code>.yaml</code> files in the same directory are auto-discovered as pages.</p>\n<p><strong>1. Define your project</strong></p>\n<pre><code class=\"language-yaml\">project:\n  name: my-site\n</code></pre>\n<p><strong>2. Build all pages</strong></p>\n<p>The <code>build</code> tool runs the full pipeline for every page. It auto-discovers specs, lints all pages to gather titles, builds a shared navigation structure, injects nav into each page, and writes HTML to <code>rendered/</code>.</p>\n<p><strong>3. Publish to Cloudflare Pages</strong></p>\n<p>The <code>publish</code> tool reads the rendered directory and deploys to Cloudflare Pages using direct upload. Assets are content-addressed — only changed files are uploaded. Returns a live deployment URL.</p>\n<p><strong>Required credentials</strong> — set as environment variables: <code>CLOUDFLARE_ACCOUNT_ID</code> and <code>CLOUDFLARE_API_TOKEN</code> with Pages write access.</p>\n",
+                      "children": [],
+                      "classes": [
+                        "content-prose"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-narrow",
+                    "align-left"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-gentle",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "section",
+              "role": "section-root",
+              "attrs": {
+                "id": "api"
+              },
+              "semantic": {
+                "vibe": "steady",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "standard"
+                  },
+                  "children": [
+                    {
+                      "tag": "h2",
+                      "role": "section-heading",
+                      "attrs": {},
+                      "children": [
+                        "API Reference"
+                      ],
+                      "classes": [
+                        "section-heading"
+                      ]
+                    },
+                    {
+                      "tag": "p",
+                      "attrs": {},
+                      "children": [
+                        "Nine MCP tools covering the full pipeline. Individual stage tools for inspection and debugging. Project-level tools for production builds and deploys."
+                      ],
+                      "classes": []
+                    },
+                    {
+                      "tag": "div",
+                      "attrs": {},
+                      "layout": {
+                        "columns": "2"
+                      },
+                      "children": [
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "lint"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Parse and validate a YAML spec. Returns a typed PageSchema and a structured list of errors and warnings."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "scaffold"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Build a classless RenderNode tree from a PageSchema. Produces the structural skeleton of the page with no CSS decisions."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "enrich"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Resolve semantic roles and layout hints into CSS class names. Produces an AnnotatedNode tree ready for serialization."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "style"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Serialize an AnnotatedNode tree to complete HTML with embedded theme CSS. Single file, no external dependencies."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "snapshot"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Capture a full-page screenshot in headless Chromium. Supports custom viewport width and height for responsive testing."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "build"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Run the full pipeline for all pages in a project. Auto-discovers specs, injects shared navigation, writes all HTML to rendered/."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "publish"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Deploy the rendered/ directory to Cloudflare Pages. Content-addressed — only uploads changed assets. Returns the live deployment URL."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "create_project"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "Create or verify a Cloudflare Pages project by name. Idempotent — safe to call multiple times."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        },
+                        {
+                          "tag": "div",
+                          "role": "feature-card-accent",
+                          "attrs": {},
+                          "children": [
+                            {
+                              "tag": "h3",
+                              "role": "feature-title",
+                              "attrs": {},
+                              "children": [
+                                "list_projects"
+                              ],
+                              "classes": [
+                                "feature-title"
+                              ]
+                            },
+                            {
+                              "tag": "p",
+                              "role": "feature-body",
+                              "attrs": {},
+                              "children": [
+                                "List all Cloudflare Pages projects in the account. Useful for verifying deployment targets before publishing."
+                              ],
+                              "classes": [
+                                "feature-body"
+                              ]
+                            }
+                          ],
+                          "classes": [
+                            "feature-card-accent"
+                          ]
+                        }
+                      ],
+                      "classes": [
+                        "layout-2col"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-standard"
+                  ]
+                }
+              ],
+              "classes": [
+                "vibe-steady",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            },
+            {
+              "tag": "footer",
+              "role": "footer-root",
+              "attrs": {},
+              "semantic": {
+                "vibe": "serene",
+                "intent": "inform",
+                "narrative": "rising",
+                "cohesion": "continues"
+              },
+              "children": [
+                {
+                  "tag": "div",
+                  "attrs": {},
+                  "layout": {
+                    "width": "standard"
+                  },
+                  "children": [
+                    {
+                      "tag": "p",
+                      "role": "footer-copy",
+                      "attrs": {},
+                      "children": [
+                        "© 2026 Gutenberg"
+                      ],
+                      "classes": [
+                        "footer-copy"
+                      ]
+                    }
+                  ],
+                  "classes": [
+                    "width-standard"
+                  ]
+                }
+              ],
+              "classes": [
+                "footer-root",
+                "vibe-serene",
+                "intent-inform",
+                "narrative-rising",
+                "cohesion-continues"
+              ]
+            }
+          ],
+          "classes": [
+            "docs-main"
+          ]
+        },
+        {
+          "tag": "aside",
+          "role": "docs-sidebar-right",
+          "attrs": {},
+          "children": [
+            {
+              "tag": "nav",
+              "role": "toc-root",
+              "attrs": {},
+              "children": [
+                {
+                  "tag": "p",
+                  "role": "toc-heading",
+                  "attrs": {},
+                  "children": [
+                    "On this page"
+                  ],
+                  "classes": [
+                    "toc-heading"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#overview"
+                  },
+                  "children": [
+                    "State of the Art"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#metrics"
+                  },
+                  "children": [
+                    "Key Metrics"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#pipeline"
+                  },
+                  "children": [
+                    "Pipeline Architecture"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#components"
+                  },
+                  "children": [
+                    "Components"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#deploy"
+                  },
+                  "children": [
+                    "Deploy"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                },
+                {
+                  "tag": "a",
+                  "role": "toc-link",
+                  "attrs": {
+                    "href": "#api"
+                  },
+                  "children": [
+                    "API Reference"
+                  ],
+                  "classes": [
+                    "toc-link"
+                  ]
+                }
+              ],
+              "classes": [
+                "toc-root"
+              ]
+            }
+          ],
+          "classes": [
+            "docs-sidebar-right"
+          ]
+        }
+      ],
+      "classes": [
+        "docs-shell"
+      ]
+    }
+  ]
+}

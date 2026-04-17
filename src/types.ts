@@ -19,20 +19,19 @@ export interface PageMeta {
 
 export interface PageLayout {
   type?: "standard" | "wide" | "narrow" | "docs";
-  theme?: "light" | "dark" | "auto";
 }
 
 export interface Section {
   type: ComponentType;
   variant?: string;
   id?: string;
-  
+
   // Semantic axes — orthogonal dimensions for page cohesion
   vibe?: "serene" | "gentle" | "steady" | "vibrant" | "intense" | "urgent";
   intent?: "engage" | "inform" | "persuade" | "direct";
   narrative?: "exposition" | "inciting" | "rising" | "climax" | "falling" | "resolution";
   cohesion?: "opens" | "continues" | "amplifies" | "supports" | "contrasts" | "pivots" | "echoes" | "resolves" | "closes";
-  
+
   [key: string]: any;
 }
 
@@ -42,11 +41,13 @@ export type ComponentType =
   | "content"
   | "cta"
   | "navigation"
-  | "footer";
+  | "footer"
+  | "table";
 
 export interface HeroSection extends Section {
   type: "hero";
   variant?: "centered" | "split" | "full-bleed";
+  overline?: string;
   content: {
     heading: string;
     subheading?: string;
@@ -60,6 +61,8 @@ export interface HeroSection extends Section {
 export interface FeaturesSection extends Section {
   type: "features";
   variant?: "grid-2" | "grid-3" | "grid-4" | "list";
+  overline?: string;
+  card_style?: "material" | "accent-border";
   heading?: string;
   subheading?: string;
   items: FeatureItem[];
@@ -69,7 +72,7 @@ export interface FeatureItem {
   icon?: string;
   title: string;
   description: string;
-  link?: string;
+  link?: string | { text: string; href: string };
 }
 
 export interface ContentSection extends Section {
@@ -82,7 +85,7 @@ export interface ContentSection extends Section {
 export interface CTASection extends Section {
   type: "cta";
   variant?: "centered" | "split" | "banner";
-  tone?: "brand" | "subtle";  // visual treatment
+  overline?: string;
   heading: string;
   description?: string;
   cta: CTA | CTA[];
@@ -92,11 +95,7 @@ export interface CTASection extends Section {
 export interface NavigationSection extends Section {
   type: "navigation";
   variant?: "default" | "centered" | "split";
-  logo?: {
-    text?: string;
-    image?: string;
-    href?: string;
-  };
+  logo?: string | { text?: string; image?: string; href?: string };
   links: NavLink[];
   cta?: CTA;
 }
@@ -110,24 +109,29 @@ export interface NavLink {
 export interface FooterSection extends Section {
   type: "footer";
   variant?: "simple" | "detailed" | "newsletter";
-  tone?: "light" | "dark";  // visual treatment
-  logo?: {
-    text?: string;
-    image?: string;
-  };
+  logo?: { text?: string; image?: string };
   description?: string;
-  links?: FooterLinkGroup[];
+  links?: NavLink[];
   social?: SocialLink[];
   copyright?: string;
 }
 
-export interface FooterLinkGroup {
-  heading: string;
-  links: NavLink[];
+export interface TableCell {
+  label: string;
+  value: string | number | boolean;
+  type: "text" | "numeric" | "bool";
+  "color-scale"?: [number, number];
+  "invert-colors"?: boolean;
+}
+
+export interface TableSection extends Section {
+  type: "table";
+  label: string;
+  cells: TableCell[];
 }
 
 export interface SocialLink {
-  platform: "twitter" | "facebook" | "linkedin" | "github" | "youtube" | "instagram";
+  platform: string;
   href: string;
 }
 
@@ -152,31 +156,11 @@ export interface ValidationError {
 
 // Render options
 
-import type { ThemeSpec } from "chromata";
-
 export interface RenderOptions {
   minify?: boolean;
   includeComments?: boolean;
   indentSize?: number;
-  theme?: ThemeSpec;
-}
-
-// Component registry
-
-export interface ComponentRenderer {
-  type: ComponentType;
-  variants: string[];
-  render: (section: Section, options: RenderOptions) => string;
-  validate?: (section: Section) => ValidationResult;
-}
-
-// HTML Node for AST
-
-export interface HTMLNode {
-  tag: string;
-  attrs?: Record<string, string>;
-  children?: (HTMLNode | string)[];
-  selfClosing?: boolean;
+  mode?: 'view' | 'edit';
 }
 
 // Semantic Axes Type Aliases

@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { serve } from "mcp-core";
+import { serve } from "./core/index.js";
 
 await serve({
   name: "gutenberg",

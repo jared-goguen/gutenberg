@@ -1,0 +1,180 @@
+{
+  "schema": {
+    "page": {
+      "meta": {
+        "title": "Gutenberg",
+        "description": "Semantic content pipeline for the modern web",
+        "language": "en"
+      },
+      "layout": {
+        "type": "docs",
+        "theme": "ink"
+      },
+      "sections": [
+        {
+          "type": "navigation",
+          "variant": "default",
+          "logo": "Gutenberg",
+          "links": []
+        },
+        {
+          "type": "hero",
+          "id": "overview",
+          "variant": "centered",
+          "overline": "Content Platform",
+          "content": {
+            "heading": "State of the Art",
+            "subheading": "A semantic pipeline that turns YAML specs into production-ready HTML. Five deterministic stages. Zero runtime dependencies. One tool call to deploy."
+          },
+          "vibe": "gentle",
+          "intent": "inform"
+        },
+        {
+          "type": "features",
+          "id": "metrics",
+          "variant": "grid-2",
+          "card_style": "accent-border",
+          "heading": "Key Metrics",
+          "subheading": "These are the numbers that define the pipeline's health. Some are measured from production data. Others are asserted from code analysis. The distinction matters.",
+          "items": [
+            {
+              "title": "5 pipeline stages",
+              "description": "LINT → SCAFFOLD → ENRICH → STYLE → SNAPSHOT. Each stage is independent, testable, and produces a diffable artifact on disk."
+            },
+            {
+              "title": "Zero runtime dependencies",
+              "description": "Output is a single .html file with all CSS embedded. No JavaScript, no CDN, no build tools required at runtime."
+            },
+            {
+              "title": "12 / 12 tests passing",
+              "description": "Full integration test suite covers all 5 pipeline stages. Status — measured. Threshold — green."
+            },
+            {
+              "title": "1 theme, infinite pages",
+              "description": "The ink theme applies to any content structure via semantic roles. Same CSS, any content, always correct."
+            },
+            {
+              "title": "Convention over config",
+              "description": "Drop a YAML file in the project directory. Navigation is auto-injected. Output paths are derived. Nothing to wire."
+            },
+            {
+              "title": "Cloudflare Pages deploy",
+              "description": "One tool call deploys every page as a single project. MD5-based deduplication — only changed files are uploaded."
+            }
+          ],
+          "vibe": "steady",
+          "intent": "inform"
+        },
+        {
+          "type": "content",
+          "id": "pipeline",
+          "variant": "narrow",
+          "markdown": "## Pipeline Architecture\n\nEach stage is a pure function with a defined input and output artifact. Stages are independently runnable and produce diffable output on disk.\n\n1. **LINT** — Parse YAML into a typed `PageSchema`. Validate required fields, section types, and semantic axes. Returns structured errors and warnings.\n2. **SCAFFOLD** — Walk the schema and build a classless `RenderNode` tree. Each component has a dedicated `.data.ts` extractor and `.scaffold.ts` builder.\n3. **ENRICH** — Resolve semantic roles (`hero-heading`, `btn-primary`, `feature-card`) and layout hints (`layout-3col`, `width-narrow`) into CSS class names via the enricher map.\n4. **STYLE** — Generate theme CSS and serialize the `AnnotatedNode` tree to complete HTML. Inlines everything into a single `<style>` block — no external requests except opted-in web fonts.\n5. **SNAPSHOT** — Capture a full-page screenshot using headless Chromium for visual regression testing and deployment previews.\n\nEvery stage writes its artifact to `rendered/`. Intermediate outputs are inspectable, diffable, and independently reproducible. Run any stage in isolation with its MCP tool.\n",
+          "vibe": "gentle"
+        },
+        {
+          "type": "features",
+          "id": "components",
+          "variant": "grid-3",
+          "card_style": "accent-border",
+          "heading": "Components",
+          "subheading": "Six section types cover the full surface area of a content page. Each has typed variants, semantic axes, and a dedicated scaffold.",
+          "items": [
+            {
+              "title": "Hero",
+              "description": "Full-bleed or centered headline sections. Supports overline, heading, subheading, and CTA button groups. Variants — centered, split, full-bleed."
+            },
+            {
+              "title": "Features",
+              "description": "Grid layouts for capability lists, metrics, or comparisons. Material cards or accent-border style. Variants — grid-2, grid-3, grid-4, list."
+            },
+            {
+              "title": "Content",
+              "description": "Markdown prose with full typographic support — headings, ordered and unordered lists, inline code, code blocks, tables, blockquotes. Variants — prose, narrow, wide."
+            },
+            {
+              "title": "CTA",
+              "description": "Conversion sections with heading, supporting copy, and one or more action buttons. Variants — centered, split, banner."
+            },
+            {
+              "title": "Navigation",
+              "description": "Cross-page nav rendered into the left sidebar in docs layout, or a sticky top bar in standard layouts. Supports logo, links, and a CTA button."
+            },
+            {
+              "title": "Footer",
+              "description": "Page footer with logo, link groups, social links, and copyright. Variants — simple, detailed, newsletter."
+            }
+          ],
+          "vibe": "steady",
+          "intent": "inform"
+        },
+        {
+          "type": "content",
+          "id": "deploy",
+          "variant": "narrow",
+          "markdown": "## Deploy\n\nGutenberg deploys to Cloudflare Pages via direct upload. A project is defined by a single `gutenberg.yaml` file. All `.yaml` files in the same directory are auto-discovered as pages.\n\n**1. Define your project**\n\n```yaml\nproject:\n  name: my-site\n```\n\n**2. Build all pages**\n\nThe `build` tool runs the full pipeline for every page. It auto-discovers specs, lints all pages to gather titles, builds a shared navigation structure, injects nav into each page, and writes HTML to `rendered/`.\n\n**3. Publish to Cloudflare Pages**\n\nThe `publish` tool reads the rendered directory and deploys to Cloudflare Pages using direct upload. Assets are content-addressed — only changed files are uploaded. Returns a live deployment URL.\n\n**Required credentials** — set as environment variables: `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` with Pages write access.\n",
+          "vibe": "gentle"
+        },
+        {
+          "type": "features",
+          "id": "api",
+          "variant": "grid-2",
+          "card_style": "accent-border",
+          "heading": "API Reference",
+          "subheading": "Nine MCP tools covering the full pipeline. Individual stage tools for inspection and debugging. Project-level tools for production builds and deploys.",
+          "items": [
+            {
+              "title": "lint",
+              "description": "Parse and validate a YAML spec. Returns a typed PageSchema and a structured list of errors and warnings."
+            },
+            {
+              "title": "scaffold",
+              "description": "Build a classless RenderNode tree from a PageSchema. Produces the structural skeleton of the page with no CSS decisions."
+            },
+            {
+              "title": "enrich",
+              "description": "Resolve semantic roles and layout hints into CSS class names. Produces an AnnotatedNode tree ready for serialization."
+            },
+            {
+              "title": "style",
+              "description": "Serialize an AnnotatedNode tree to complete HTML with embedded theme CSS. Single file, no external dependencies."
+            },
+            {
+              "title": "snapshot",
+              "description": "Capture a full-page screenshot in headless Chromium. Supports custom viewport width and height for responsive testing."
+            },
+            {
+              "title": "build",
+              "description": "Run the full pipeline for all pages in a project. Auto-discovers specs, injects shared navigation, writes all HTML to rendered/."
+            },
+            {
+              "title": "publish",
+              "description": "Deploy the rendered/ directory to Cloudflare Pages. Content-addressed — only uploads changed assets. Returns the live deployment URL."
+            },
+            {
+              "title": "create_project",
+              "description": "Create or verify a Cloudflare Pages project by name. Idempotent — safe to call multiple times."
+            },
+            {
+              "title": "list_projects",
+              "description": "List all Cloudflare Pages projects in the account. Useful for verifying deployment targets before publishing."
+            }
+          ],
+          "vibe": "steady",
+          "intent": "inform"
+        },
+        {
+          "type": "footer",
+          "variant": "simple",
+          "copyright": "© 2026 Gutenberg",
+          "vibe": "serene"
+        }
+      ]
+    }
+  },
+  "result": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  }
+}

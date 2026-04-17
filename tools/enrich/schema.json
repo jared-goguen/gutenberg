@@ -1,0 +1,28 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file.",
+        "x-semantic-type": "GutenbergSpecPath"
+      }
+    },
+    "required": ["spec_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "enrich_path": {
+        "type": "string",
+        "description": "Path to written {name}.enrich.json artifact containing AnnotatedNode tree with resolved CSS classes.",
+        "x-semantic-type": "ArtifactPath"
+      },
+      "section_count": {
+        "type": "integer",
+        "description": "Number of sections enriched"
+      }
+    }
+  }
+}

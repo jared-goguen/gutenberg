@@ -7,6 +7,7 @@ const VALID_COMPONENT_TYPES: ComponentType[] = [
   "cta",
   "navigation",
   "footer",
+  "table",
 ];
 
 // Semantic axes validation
@@ -171,6 +172,53 @@ export function validateSection(section: Section, index: number): ValidationErro
         errors.push({
           path: `${path}.links`,
           message: "Navigation section requires 'links' array",
+        });
+      }
+      break;
+
+    case "table":
+      if (!section.label) {
+        errors.push({
+          path: `${path}.label`,
+          message: "Table section requires 'label' property (e.g., BOOKKEEPING)",
+        });
+      }
+      if (!section.cells || !Array.isArray(section.cells)) {
+        errors.push({
+          path: `${path}.cells`,
+          message: "Table section requires 'cells' array",
+        });
+      } else if (section.cells.length !== 6) {
+        errors.push({
+          path: `${path}.cells`,
+          message: "Table section must have exactly 6 cells",
+        });
+      } else {
+        section.cells.forEach((cell: any, i: number) => {
+          if (!cell.label) {
+            errors.push({
+              path: `${path}.cells[${i}].label`,
+              message: "Cell requires a label",
+            });
+          }
+          if (cell.value === undefined || cell.value === null) {
+            errors.push({
+              path: `${path}.cells[${i}].value`,
+              message: "Cell requires a value",
+            });
+          }
+          if (!["text", "numeric", "bool"].includes(cell.type)) {
+            errors.push({
+              path: `${path}.cells[${i}].type`,
+              message: `Invalid cell type '${cell.type}'. Valid types: text, numeric, bool`,
+            });
+          }
+          if (cell.type === "numeric" && !cell["color-scale"]) {
+            errors.push({
+              path: `${path}.cells[${i}]["color-scale"]`,
+              message: "Numeric cell type requires color-scale [min, max]",
+            });
+          }
         });
       }
       break;

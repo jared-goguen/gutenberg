@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gutenberg</title>
+  <meta name="description" content="Semantic content pipeline for the modern web">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet">
+  <style>
+
+:root {
+  --font: 'Inter', sans-serif;
+
+  --bg:           oklch(0.06 0.015 265);
+  --surface:      oklch(0.11 0.015 265);
+  --surface-alt:  oklch(0.14 0.015 265);
+  --border:       oklch(0.20 0.015 265);
+  --border-hi:    oklch(0.34 0.015 265);
+
+  --text:         oklch(0.97 0.005 265);
+  --text-body:    oklch(0.73 0.008 265);
+  --text-muted:   oklch(0.44 0.008 265);
+
+  --accent:       oklch(0.68 0.22 25);
+  --accent-dim:   oklch(0.68 0.22 25 / 0.15);
+  --accent-bg:    oklch(0.68 0.22 25 / 0.08);
+
+  --accent-2:     oklch(0.70 0.22 290);
+  --accent-2-dim: oklch(0.70 0.22 290 / 0.15);
+  --accent-2-bg:  oklch(0.70 0.22 290 / 0.08);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { line-height: 1.5; scroll-behavior: smooth; }
+img  { display: block; max-width: 100%; height: auto; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: var(--font);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text);
+}
+
+/* ══════════════════════════════════════
+   DOCS SHELL — the whole page
+   ══════════════════════════════════════ */
+
+.docs-shell {
+  display: grid;
+  grid-template-columns: 200px 1fr 180px;
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+/* ── Sidebar ── */
+.docs-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 0 2rem;
+}
+
+.docs-sidebar .nav-root {
+  position: static;
+  backdrop-filter: none;
+  background: transparent;
+  border-bottom: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.docs-sidebar .nav-logo {
+  font-family: var(--font);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  display: block;
+  padding: 0 1.5rem 1.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-sidebar .nav-link {
+  display: block;
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.5rem 1.5rem;
+  border-left: 2px solid transparent;
+  transition: color 120ms ease, background 120ms ease, border-color 120ms ease;
+  line-height: 1.4;
+}
+
+.docs-sidebar .nav-link:hover {
+  color: var(--text-body);
+  background: oklch(0.14 0.012 265 / 0.6);
+}
+
+/* Treat the first nav link as "active" to mirror the reference */
+.docs-sidebar .nav-link:first-of-type {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* Override the nav-scaffold's horizontal flex wrapper divs */
+.docs-sidebar .nav-root > div {
+  display: block;
+  max-width: none;
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+/* The inner links container — stack vertically */
+.docs-sidebar .nav-root > div > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0.5rem;
+}
+
+/* ── Right sidebar (on-page TOC) ── */
+.docs-sidebar-right {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 2.5rem 1.25rem 2rem 1rem;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.toc-root {
+  display: flex;
+  flex-direction: column;
+}
+
+.toc-heading {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.toc-link {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.3rem 0;
+  line-height: 1.4;
+  transition: color 120ms ease;
+  border-left: 2px solid transparent;
+  padding-left: 0.625rem;
+}
+
+.toc-link:hover {
+  color: var(--text-body);
+}
+
+.toc-link:first-of-type {
+  color: var(--accent-2);
+  border-left-color: var(--accent-2);
+}
+
+/* ── Main content ── */
+.docs-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Every section inside docs-main gets consistent left-aligned padding */
+/* [class] bumps specificity to 0,2,1 — beats .docs-main .vibe-* at 0,2,0 */
+.docs-main > section[class] {
+  padding: 4rem 5rem;
+  background: var(--bg);
+}
+
+.docs-main > footer[class] {
+  padding: 2rem 5rem;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+/* First section (hero): accent bottom rule, tighter top padding */
+/* [class]:first-child = 0,2,2 — beats both vibe and the rule above */
+.docs-main > section[class]:first-child {
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+  border-bottom: 1px solid var(--accent);
+}
+
+/* Override width constraints — let content flow naturally */
+.docs-main .width-narrow,
+.docs-main .width-standard,
+.docs-main .width-wide {
+  max-width: 740px;
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
+/* Override centering — everything left-aligned in docs */
+.docs-main .align-center {
+  text-align: left;
+}
+
+/* Override vibe padding — sections control their own padding above */
+.docs-main .vibe-serene,
+.docs-main .vibe-gentle,
+.docs-main .vibe-steady,
+.docs-main .vibe-vibrant,
+.docs-main .vibe-intense,
+.docs-main .vibe-urgent {
+  padding-block: 0;
+}
+
+/* No glow orb in docs hero */
+.docs-main .vibe-vibrant::before {
+  display: none;
+}
+
+/* ── Hero section — glow + gradient rule ── */
+.docs-main > section[class]:first-child {
+  position: relative;
+  overflow: hidden;
+}
+
+.docs-main > section[class]:first-child::before {
+  content: '';
+  position: absolute;
+  top: -80px; left: 0; right: 0;
+  width: 100%; height: 600px;
+  background:
+    radial-gradient(ellipse 600px 400px at 25% 0%, oklch(0.68 0.22 25 / 0.18), transparent 70%),
+    radial-gradient(ellipse 600px 400px at 75% 0%, oklch(0.70 0.22 290 / 0.14), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.docs-main > section[class]:first-child > * {
+  position: relative;
+  z-index: 1;
+}
+
+.docs-main > section[class]:first-child {
+  border-bottom: none;
+}
+
+.docs-main > section[class]:first-child::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent) 25%, var(--accent-2) 75%, transparent);
+  z-index: 2;
+}
+
+/* ── Hero in docs context ── */
+.docs-main .hero-heading {
+  font-size: clamp(4rem, 7vw, 6.5rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  background: linear-gradient(135deg, var(--text) 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.5rem;
+}
+
+.docs-main .hero-body {
+  font-size: 1.25rem;
+  line-height: 1.55;
+  color: var(--text-body);
+  max-width: 60ch;
+  margin-bottom: 0;
+}
+
+/* ── Section overline in docs ── */
+.docs-main .section-overline {
+  display: inline-flex;
+  background: linear-gradient(to right, var(--accent-bg), var(--accent-2-bg));
+  border: 1px solid oklch(0.70 0.22 290 / 0.30);
+  border-radius: 100px;
+  padding: 0.25rem 0.875rem;
+  font-size: 0.625rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Section heading — "KEY METRICS" label style ── */
+.docs-main .section-heading {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+/* ── Subheading under section heading ── */
+.docs-main section > div > p:not([class]) {
+  font-size: 1.25rem;
+  line-height: 1.55;
+  color: var(--text-body);
+  max-width: 65ch;
+  margin-bottom: 3rem;
+}
+
+/* ── Feature cards (accent-border) in docs ── */
+.docs-main .layout-2col {
+  gap: 3rem 4rem;
+}
+
+.docs-main .feature-card-accent {
+  padding: 0 0 0 1.25rem;
+  border-left-width: 2px;
+}
+
+/* Alternate card border colors: odd=crimson, even=violet */
+.docs-main .layout-2col > .feature-card-accent:nth-child(odd) {
+  border-left-color: var(--accent);
+}
+
+.docs-main .layout-2col > .feature-card-accent:nth-child(even) {
+  border-left-color: var(--accent-2);
+}
+
+.docs-main .feature-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.docs-main .feature-body {
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--text-body);
+  margin-bottom: 0;
+}
+
+/* ── Prose in docs ── */
+.docs-main .content-prose {
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--text-body);
+  max-width: 640px;
+}
+
+.docs-main .content-prose h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  letter-spacing: -0.015em;
+}
+
+.docs-main .content-prose h2:first-child { margin-top: 0; }
+
+.docs-main .content-prose ol,
+.docs-main .content-prose ul {
+  padding-left: 1.25em;
+  margin: 1rem 0;
+}
+
+.docs-main .content-prose li {
+  margin-bottom: 0.625rem;
+  line-height: 1.65;
+}
+
+.docs-main .content-prose li::marker {
+  color: var(--text-muted);
+}
+
+.docs-main .content-prose strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.docs-main .content-prose code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.8125em;
+  background: var(--accent-2-bg);
+  color: var(--accent-2);
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+  border: 1px solid var(--accent-2-dim);
+}
+
+/* ── Large numbered pipeline steps ── */
+.docs-main .content-prose ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: pipeline-counter;
+}
+
+.docs-main .content-prose ol li {
+  counter-increment: pipeline-counter;
+  position: relative;
+  padding-left: 3.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.docs-main .content-prose ol li::before {
+  content: counter(pipeline-counter);
+  position: absolute;
+  left: 0;
+  top: -0.1em;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  opacity: 0.7;
+}
+
+/* ── Footer in docs ── */
+.docs-main .footer-copy {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: left;
+  padding-top: 0;
+  margin-top: 0;
+  border-top: none;
+}
+
+/* ══════════════════════════════════════
+   STANDARD LAYOUT (non-docs)
+   ══════════════════════════════════════ */
+
+/* ── Navigation — Glass Morphism ── */
+.nav-root {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px) saturate(180%);
+  background: oklch(0.07 0.010 265 / 0.85);
+  border-bottom: 1px solid var(--border);
+  padding: 1.25rem 0;
+}
+
+.nav-logo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+  transition: color 200ms ease;
+}
+
+.nav-logo:hover { color: var(--accent); }
+
+.nav-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 200ms ease;
+}
+
+.nav-link:hover { color: var(--text); }
+
+/* ── Section overline ── */
+.section-overline {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+/* ── Hero ── */
+.hero-heading {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.hero-body {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 42rem;
+  margin-bottom: 2rem;
+}
+
+.hero-body + .hero-body { margin-top: 1rem; }
+
+/* ── Buttons ── */
+.btn-primary, .btn-secondary, .btn-outline, .btn-ghost {
+  font-family: var(--font);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  display: inline-block;
+  transition: all 180ms ease;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: white;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-hi);
+  color: var(--text-body);
+}
+
+.btn-secondary:hover {
+  border-color: var(--text);
+  color: var(--text);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.btn-outline:hover { background: var(--accent); color: white; }
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  padding-left: 0;
+  padding-right: 0;
+  color: var(--accent);
+}
+
+.btn-ghost:hover { opacity: 0.75; }
+
+/* ── Section heading (standard layout) ── */
+.section-heading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+/* ── Feature card — material (standard) ── */
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2rem;
+  transition: border-color 280ms ease, box-shadow 280ms ease, transform 180ms ease;
+}
+
+.feature-card:hover {
+  border-color: oklch(0.68 0.19 25 / 0.45);
+  box-shadow: 0 8px 40px oklch(0.68 0.19 25 / 0.07);
+  transform: translateY(-2px);
+}
+
+/* ── Feature card — accent-border ── */
+.feature-card-accent {
+  background: transparent;
+  border: none;
+  border-left: 2px solid var(--accent);
+  border-radius: 0;
+  padding: 0.125rem 0 0.125rem 1.25rem;
+  transition: border-left-color 180ms ease;
+}
+
+.feature-card-accent:hover {
+  border-left-color: oklch(0.78 0.16 25);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.feature-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.feature-body {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin-bottom: 0.75rem;
+}
+
+.feature-link {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.feature-link:hover { opacity: 0.75; }
+
+/* ── Prose ── */
+.content-prose {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+
+.content-prose h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-top: 3rem;
+  margin-bottom: 1.25rem;
+}
+
+.content-prose h2:first-child { margin-top: 0; }
+
+.content-prose h3 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.content-prose p { margin-bottom: 1.5rem; }
+
+.content-prose ul,
+.content-prose ol {
+  margin: 1.5rem 0;
+  padding-left: 1.75em;
+}
+
+.content-prose li { margin-bottom: 0.5rem; }
+.content-prose li::marker { color: var(--accent); }
+
+.content-prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.content-prose code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.875em;
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.content-prose pre {
+  background: var(--surface);
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.content-prose pre code { background: none; padding: 0; border: none; }
+
+.content-prose a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity 180ms ease;
+}
+
+.content-prose a:hover { opacity: 0.75; }
+.content-prose strong { font-weight: 700; color: var(--text); }
+.content-prose em { font-style: italic; }
+
+.content-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 3rem 0;
+}
+
+.content-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 0.9375rem;
+}
+
+.content-prose th {
+  font-weight: 600;
+  color: var(--text);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-hi);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.content-prose td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-body);
+}
+
+.content-prose tr:last-child td { border-bottom: none; }
+
+/* ── CTA ── */
+.cta-heading {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+}
+
+.cta-body {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin-bottom: 2rem;
+}
+
+/* ── Footer ── */
+.footer-root {
+  background: oklch(0.05 0.008 265);
+  border-top: 1px solid var(--border);
+  padding: 3rem 0;
+  margin-top: 5rem;
+}
+
+.footer-logo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.footer-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.footer-link:hover { color: var(--text); }
+
+.footer-copy {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ══════════════════════════════════════
+   SEMANTIC AXES (standard layout)
+   ══════════════════════════════════════ */
+
+.vibe-serene  { padding-block: 8rem; background: var(--bg); }
+.vibe-gentle  { padding-block: 6rem; background: var(--bg); }
+.vibe-steady  { padding-block: 5rem; background: var(--surface-alt); }
+.vibe-urgent  { padding-block: 3rem; background: var(--surface-alt); }
+
+.vibe-vibrant {
+  padding-block: 7rem;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.vibe-vibrant::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 900px; height: 700px;
+  background: radial-gradient(ellipse 900px 700px at 50% 0%, var(--accent-dim), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.vibe-vibrant > * { position: relative; z-index: 1; }
+.vibe-vibrant .hero-heading { font-weight: 800; letter-spacing: -0.03em; }
+
+.vibe-intense {
+  padding-block: 6rem;
+  background: linear-gradient(135deg, oklch(0.18 0.06 25) 0%, var(--bg) 100%);
+}
+
+.intent-engage .btn-primary { box-shadow: 0 4px 20px oklch(0.68 0.19 25 / 0.28); }
+.intent-engage .btn-primary:hover { box-shadow: 0 8px 30px oklch(0.68 0.19 25 / 0.38); }
+
+.narrative-climax .hero-heading { font-weight: 800; letter-spacing: -0.04em; }
+.narrative-climax .cta-heading  { font-weight: 800; }
+
+/* ══════════════════════════════════════
+   BASE LAYOUT UTILITIES
+   (duplicated here so the stylesheet is self-contained)
+   ══════════════════════════════════════ */
+
+.flex             { display: flex; }
+.flex-col         { flex-direction: column; }
+.flex-wrap        { flex-wrap: wrap; }
+.items-center     { align-items: center; }
+.items-start      { align-items: flex-start; }
+.justify-center   { justify-content: center; }
+.justify-between  { justify-content: space-between; }
+.gap-sm           { gap: 1rem; }
+.gap-md           { gap: 1.5rem; }
+.gap-lg           { gap: 2rem; }
+
+.grid { display: grid; }
+
+.layout-2col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+@media (min-width: 640px) {
+  .layout-2col { grid-template-columns: repeat(2, 1fr); }
+}
+
+.layout-3col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .layout-3col { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+}
+
+.layout-4col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .layout-4col { grid-template-columns: repeat(4, 1fr); }
+}
+
+.width-full     { max-width: 100%; }
+.width-narrow   { max-width: 42rem; margin-inline: auto; padding-inline: 1.5rem; }
+.width-standard { max-width: 80rem; margin-inline: auto; padding-inline: 1.5rem; }
+.width-wide     { max-width: 100rem; margin-inline: auto; padding-inline: 1.5rem; }
+
+.align-left    { text-align: left; }
+.align-center  { text-align: center; }
+.align-split   { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
+
+@media (max-width: 1024px) {
+  .docs-shell { grid-template-columns: 200px 1fr; }
+  .docs-sidebar-right { display: none; }
+}
+
+@media (max-width: 768px) {
+  .align-split { grid-template-columns: 1fr; gap: 2rem; }
+  .docs-shell  { grid-template-columns: 1fr; }
+  .docs-sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .docs-main > section,
+  .docs-main > footer { padding: 2.5rem 1.5rem; }
+}
+
+  </style>
+</head>
+<body>
+<div class="docs-shell">
+    <aside class="docs-sidebar">
+        <nav class="nav-root vibe-steady intent-inform narrative-rising cohesion-continues">
+            <div class="width-standard flex justify-between items-center">
+        <a href="/" class="nav-logo">Gutenberg</a>
+        <div class="flex gap-sm"></div>
+      </div>
+    </nav>
+  </aside>
+    <main class="docs-main">
+        <section id="overview" class="vibe-gentle intent-inform narrative-rising cohesion-continues">
+            <div class="width-narrow align-center">
+        <p class="section-overline">Content Platform</p>
+        <h1 class="hero-heading">State of the Art</h1>
+        <p class="hero-body">A semantic pipeline that turns YAML specs into production-ready HTML. Five deterministic stages. Zero runtime dependencies. One tool call to deploy.</p>
+      </div>
+    </section>
+        <section id="metrics" class="vibe-steady intent-inform narrative-rising cohesion-continues">
+            <div class="width-standard">
+        <h2 class="section-heading">Key Metrics</h2>
+        <p>These are the numbers that define the pipeline&#39;s health. Some are measured from production data. Others are asserted from code analysis. The distinction matters.</p>
+                <div class="layout-2col">
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">5 pipeline stages</h3>
+            <p class="feature-body">LINT → SCAFFOLD → ENRICH → STYLE → SNAPSHOT. Each stage is independent, testable, and produces a diffable artifact on disk.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Zero runtime dependencies</h3>
+            <p class="feature-body">Output is a single .html file with all CSS embedded. No JavaScript, no CDN, no build tools required at runtime.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">12 / 12 tests passing</h3>
+            <p class="feature-body">Full integration test suite covers all 5 pipeline stages. Status — measured. Threshold — green.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">1 theme, infinite pages</h3>
+            <p class="feature-body">The ink theme applies to any content structure via semantic roles. Same CSS, any content, always correct.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Convention over config</h3>
+            <p class="feature-body">Drop a YAML file in the project directory. Navigation is auto-injected. Output paths are derived. Nothing to wire.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Cloudflare Pages deploy</h3>
+            <p class="feature-body">One tool call deploys every page as a single project. MD5-based deduplication — only changed files are uploaded.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+        <section id="pipeline" class="vibe-gentle intent-inform narrative-rising cohesion-continues">
+            <div class="width-narrow align-left">
+        <div class="content-prose"><h2>Pipeline Architecture</h2>
+<p>Each stage is a pure function with a defined input and output artifact. Stages are independently runnable and produce diffable output on disk.</p>
+<ol>
+<li><strong>LINT</strong> — Parse YAML into a typed <code>PageSchema</code>. Validate required fields, section types, and semantic axes. Returns structured errors and warnings.</li>
+<li><strong>SCAFFOLD</strong> — Walk the schema and build a classless <code>RenderNode</code> tree. Each component has a dedicated <code>.data.ts</code> extractor and <code>.scaffold.ts</code> builder.</li>
+<li><strong>ENRICH</strong> — Resolve semantic roles (<code>hero-heading</code>, <code>btn-primary</code>, <code>feature-card</code>) and layout hints (<code>layout-3col</code>, <code>width-narrow</code>) into CSS class names via the enricher map.</li>
+<li><strong>STYLE</strong> — Generate theme CSS and serialize the <code>AnnotatedNode</code> tree to complete HTML. Inlines everything into a single <code>&lt;style&gt;</code> block — no external requests except opted-in web fonts.</li>
+<li><strong>SNAPSHOT</strong> — Capture a full-page screenshot using headless Chromium for visual regression testing and deployment previews.</li>
+</ol>
+<p>Every stage writes its artifact to <code>rendered/</code>. Intermediate outputs are inspectable, diffable, and independently reproducible. Run any stage in isolation with its MCP tool.</p>
+</div>
+      </div>
+    </section>
+        <section id="components" class="vibe-steady intent-inform narrative-rising cohesion-continues">
+            <div class="width-standard">
+        <h2 class="section-heading">Components</h2>
+        <p>Six section types cover the full surface area of a content page. Each has typed variants, semantic axes, and a dedicated scaffold.</p>
+                <div class="layout-3col">
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Hero</h3>
+            <p class="feature-body">Full-bleed or centered headline sections. Supports overline, heading, subheading, and CTA button groups. Variants — centered, split, full-bleed.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Features</h3>
+            <p class="feature-body">Grid layouts for capability lists, metrics, or comparisons. Material cards or accent-border style. Variants — grid-2, grid-3, grid-4, list.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Content</h3>
+            <p class="feature-body">Markdown prose with full typographic support — headings, ordered and unordered lists, inline code, code blocks, tables, blockquotes. Variants — prose, narrow, wide.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">CTA</h3>
+            <p class="feature-body">Conversion sections with heading, supporting copy, and one or more action buttons. Variants — centered, split, banner.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Navigation</h3>
+            <p class="feature-body">Cross-page nav rendered into the left sidebar in docs layout, or a sticky top bar in standard layouts. Supports logo, links, and a CTA button.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">Footer</h3>
+            <p class="feature-body">Page footer with logo, link groups, social links, and copyright. Variants — simple, detailed, newsletter.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+        <section id="deploy" class="vibe-gentle intent-inform narrative-rising cohesion-continues">
+            <div class="width-narrow align-left">
+        <div class="content-prose"><h2>Deploy</h2>
+<p>Gutenberg deploys to Cloudflare Pages via direct upload. A project is defined by a single <code>gutenberg.yaml</code> file. All <code>.yaml</code> files in the same directory are auto-discovered as pages.</p>
+<p><strong>1. Define your project</strong></p>
+<pre><code class="language-yaml">project:
+  name: my-site
+</code></pre>
+<p><strong>2. Build all pages</strong></p>
+<p>The <code>build</code> tool runs the full pipeline for every page. It auto-discovers specs, lints all pages to gather titles, builds a shared navigation structure, injects nav into each page, and writes HTML to <code>rendered/</code>.</p>
+<p><strong>3. Publish to Cloudflare Pages</strong></p>
+<p>The <code>publish</code> tool reads the rendered directory and deploys to Cloudflare Pages using direct upload. Assets are content-addressed — only changed files are uploaded. Returns a live deployment URL.</p>
+<p><strong>Required credentials</strong> — set as environment variables: <code>CLOUDFLARE_ACCOUNT_ID</code> and <code>CLOUDFLARE_API_TOKEN</code> with Pages write access.</p>
+</div>
+      </div>
+    </section>
+        <section id="api" class="vibe-steady intent-inform narrative-rising cohesion-continues">
+            <div class="width-standard">
+        <h2 class="section-heading">API Reference</h2>
+        <p>Nine MCP tools covering the full pipeline. Individual stage tools for inspection and debugging. Project-level tools for production builds and deploys.</p>
+                <div class="layout-2col">
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">lint</h3>
+            <p class="feature-body">Parse and validate a YAML spec. Returns a typed PageSchema and a structured list of errors and warnings.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">scaffold</h3>
+            <p class="feature-body">Build a classless RenderNode tree from a PageSchema. Produces the structural skeleton of the page with no CSS decisions.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">enrich</h3>
+            <p class="feature-body">Resolve semantic roles and layout hints into CSS class names. Produces an AnnotatedNode tree ready for serialization.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">style</h3>
+            <p class="feature-body">Serialize an AnnotatedNode tree to complete HTML with embedded theme CSS. Single file, no external dependencies.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">snapshot</h3>
+            <p class="feature-body">Capture a full-page screenshot in headless Chromium. Supports custom viewport width and height for responsive testing.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">build</h3>
+            <p class="feature-body">Run the full pipeline for all pages in a project. Auto-discovers specs, injects shared navigation, writes all HTML to rendered/.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">publish</h3>
+            <p class="feature-body">Deploy the rendered/ directory to Cloudflare Pages. Content-addressed — only uploads changed assets. Returns the live deployment URL.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">create_project</h3>
+            <p class="feature-body">Create or verify a Cloudflare Pages project by name. Idempotent — safe to call multiple times.</p>
+          </div>
+                    <div class="feature-card-accent">
+            <h3 class="feature-title">list_projects</h3>
+            <p class="feature-body">List all Cloudflare Pages projects in the account. Useful for verifying deployment targets before publishing.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+        <footer class="footer-root vibe-serene intent-inform narrative-rising cohesion-continues">
+            <div class="width-standard">
+        <p class="footer-copy">© 2026 Gutenberg</p>
+      </div>
+    </footer>
+  </main>
+    <aside class="docs-sidebar-right">
+        <nav class="toc-root">
+      <p class="toc-heading">On this page</p>
+      <a href="#overview" class="toc-link">State of the Art</a>
+      <a href="#metrics" class="toc-link">Key Metrics</a>
+      <a href="#pipeline" class="toc-link">Pipeline Architecture</a>
+      <a href="#components" class="toc-link">Components</a>
+      <a href="#deploy" class="toc-link">Deploy</a>
+      <a href="#api" class="toc-link">API Reference</a>
+    </nav>
+  </aside>
+</div>
+</body>
+</html>

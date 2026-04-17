@@ -1,0 +1,32 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file.",
+        "x-semantic-type": "GutenbergSpecPath"
+      },
+      "width": {
+        "type": "integer",
+        "description": "Browser viewport width in pixels (default: 1440)"
+      },
+      "height": {
+        "type": "integer",
+        "description": "Browser viewport height in pixels (default: 900)"
+      }
+    },
+    "required": ["spec_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "image_path": {
+        "type": "string",
+        "description": "Path to captured PNG screenshot file.",
+        "x-semantic-type": "ImageFilePath"
+      }
+    }
+  }
+}

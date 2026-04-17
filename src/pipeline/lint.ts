@@ -1,0 +1,30 @@
+/**
+ * LINT Stage — Validate YAML spec
+ *
+ * Takes raw YAML string → validates structure + semantics
+ * Returns { schema, result } where result contains any errors/warnings
+ */
+
+import type { PageSchema, ValidationResult } from "../types.js";
+import { parseSchema } from "../parser.js";
+import { validateSchema } from "../validator.js";
+
+export interface LintOutput {
+  schema: PageSchema;
+  result: ValidationResult;
+}
+
+/**
+ * Parse and validate a YAML spec string
+ * Always returns both the schema and validation result
+ * Validation is advisory mode — errors don't block rendering
+ */
+export function lint(yamlContent: string): LintOutput {
+  const schema = parseSchema(yamlContent);
+  const result = validateSchema(schema);
+
+  return {
+    schema,
+    result,
+  };
+}

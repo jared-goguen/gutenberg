@@ -1,0 +1,25 @@
+/**
+ * ENRICH Stage — RenderNode[] → AnnotatedNode[]
+ * 
+ * Walks RenderNode trees and resolves class names from:
+ * - Semantic roles (hero-heading, btn-primary)
+ * - Layout hints (grid-3, width-narrow)
+ * - Semantic axes (vibe-vibrant, intent-engage)
+ */
+
+import type { RenderNode, AnnotatedNode } from "../scaffold/node.js";
+import { enrichRenderNodes } from "../enricher.js";
+
+/**
+ * Enrich render nodes by resolving all class names
+ */
+export function enrich(nodes: RenderNode[]): AnnotatedNode[] {
+  return enrichRenderNodes(nodes);
+}
+
+/**
+ * Enrich a single render node
+ */
+export function enrichNode(node: RenderNode): AnnotatedNode {
+  return enrichRenderNodes([node])[0];
+}

@@ -6,6 +6,7 @@ import { stringify } from "yaml";
 
 let srv: TestServer;
 const testDir = join(process.cwd(), "test-specs");
+const renderedDir = join(testDir, "rendered");
 
 const minimalSchema = {
   page: {
@@ -30,7 +31,6 @@ const fullSchema = {
     },
     layout: {
       type: "standard",
-      theme: "light",
     },
     sections: [
       {
@@ -46,8 +46,18 @@ const fullSchema = {
         content: {
           heading: "Welcome",
           subheading: "Testing Gutenberg",
-          cta: { text: "Get Started", href: "/start", variant: "primary" },
+          cta: { text: "Get Started", href: "/start" },
         },
+      },
+      {
+        type: "features",
+        variant: "grid-3",
+        heading: "Features",
+        items: [
+          { title: "Fast", description: "Very fast" },
+          { title: "Easy", description: "Very easy" },
+          { title: "Reliable", description: "Very reliable" },
+        ],
       },
       {
         type: "footer",
@@ -67,6 +77,7 @@ function writeSpec(name: string, schema: any): string {
 
 beforeAll(async () => {
   srv = await spawnServer();
+  mkdirSync(renderedDir, { recursive: true });
 });
 
 afterAll(async () => {
@@ -79,22 +90,30 @@ afterAll(async () => {
 });
 
 describe("Tool discovery", () => {
-  test("server exposes all 3 rendering tools", async () => {
+  test("server exposes all pipeline tools", async () => {
     const tools = await srv.listTools();
     expect(tools.sort()).toEqual([
-      "render_page",
-      "snapshot_html",
-      "validate_schema",
+      "build",
+      "create_project",
+      "enrich",
+      "get_project",
+      "lint",
+      "list_projects",
+      "publish",
+      "scaffold",
+      "snapshot",
+      "style",
     ]);
   });
 });
 
-describe("validate_schema", () => {
+describe("lint", () => {
   test("returns valid:true for a well-formed schema", async () => {
-    const spec_path = writeSpec("validate-minimal", minimalSchema);
-    const result = JSON.parse(await srv.call("validate_schema", { spec_path }));
+    const spec_path = writeSpec("lint-minimal", minimalSchema);
+    const result = JSON.parse(await srv.call("lint", { spec_path }));
+    expect(typeof result.lint_path).toBe("string");
     expect(result.valid).toBe(true);
-    expect(result.errors).toEqual([]);
+    expect(result.errors).toBe(0);
   });
 
   test("returns valid:false with errors for missing required fields", async () => {
@@ -105,11 +124,10 @@ describe("validate_schema", () => {
         ],
       },
     };
-    const spec_path = writeSpec("validate-missing", badSchema);
-    const result = JSON.parse(await srv.call("validate_schema", { spec_path }));
+    const spec_path = writeSpec("lint-missing", badSchema);
+    const result = JSON.parse(await srv.call("lint", { spec_path }));
     expect(result.valid).toBe(false);
-    expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors.some((e: any) => e.path.includes("content"))).toBe(true);
+    expect(result.errors).toBeGreaterThan(0);
   });
 
   test("returns valid:false for invalid section type", async () => {
@@ -118,10 +136,10 @@ describe("validate_schema", () => {
         sections: [{ type: "totally-unknown-type" }],
       },
     };
-    const spec_path = writeSpec("validate-badtype", badSchema);
-    const result = JSON.parse(await srv.call("validate_schema", { spec_path }));
+    const spec_path = writeSpec("lint-badtype", badSchema);
+    const result = JSON.parse(await srv.call("lint", { spec_path }));
     expect(result.valid).toBe(false);
-    expect(result.errors[0].message).toContain("Invalid section type");
+    expect(result.errors).toBeGreaterThan(0);
   });
 
   test("returns warnings for missing metadata", async () => {
@@ -130,185 +148,180 @@ describe("validate_schema", () => {
         sections: [{ type: "hero", content: { heading: "Hi" } }],
       },
     };
-    const spec_path = writeSpec("validate-nometa", schemaNoMeta);
-    const result = JSON.parse(await srv.call("validate_schema", { spec_path }));
-    expect(result.warnings.length).toBeGreaterThan(0);
+    const spec_path = writeSpec("lint-nometa", schemaNoMeta);
+    const result = JSON.parse(await srv.call("lint", { spec_path }));
+    expect(result.warnings).toBeGreaterThan(0);
   });
 });
 
-describe("render_page", () => {
-  test("renders minimal schema to HTML file", async () => {
-    const spec_path = writeSpec("render-minimal", minimalSchema);
-    const result = JSON.parse(await srv.call("render_page", { spec_path }));
+describe("scaffold", () => {
+  test("builds RenderNode tree from lint artifact", async () => {
+    const spec_path = writeSpec("scaffold-test", minimalSchema);
+    await srv.call("lint", { spec_path });
     
-    expect(typeof result.html_path).toBe("string");
-    expect(result.html_path).toMatch(/\.html$/);
+    const scaffoldResult = JSON.parse(
+      await srv.call("scaffold", { spec_path })
+    );
     
-    // Verify file exists and contains expected content
-    const html = readFileSync(result.html_path, "utf8");
+    expect(typeof scaffoldResult.scaffold_path).toBe("string");
+    expect(scaffoldResult.scaffold_path).toMatch(/\.scaffold\.json$/);
+    expect(scaffoldResult.section_count).toBeGreaterThan(0);
+  });
+});
+
+describe("enrich", () => {
+  test("resolves CSS classes from RenderNode tree", async () => {
+    const spec_path = writeSpec("enrich-test", minimalSchema);
+    await srv.call("lint", { spec_path });
+    await srv.call("scaffold", { spec_path });
+    
+    const enrichResult = JSON.parse(
+      await srv.call("enrich", { spec_path })
+    );
+    
+    expect(typeof enrichResult.enrich_path).toBe("string");
+    expect(enrichResult.enrich_path).toMatch(/\.enrich\.json$/);
+    expect(enrichResult.section_count).toBeGreaterThan(0);
+  });
+});
+
+describe("style", () => {
+  test("generates complete HTML from enriched tree", async () => {
+    const spec_path = writeSpec("style-test", fullSchema);
+    await srv.call("lint", { spec_path });
+    await srv.call("scaffold", { spec_path });
+    await srv.call("enrich", { spec_path });
+    
+    const styleResult = JSON.parse(
+      await srv.call("style", { spec_path })
+    );
+    
+    expect(typeof styleResult.html_path).toBe("string");
+    expect(styleResult.html_path).toMatch(/\.html$/);
+    expect(styleResult.bytes).toBeGreaterThan(1000);
+
+    const html = readFileSync(styleResult.html_path, "utf8");
     expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("Hello World");
-  });
-
-  test("renders full schema and includes page title", async () => {
-    const spec_path = writeSpec("render-full", fullSchema);
-    const result = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    const html = readFileSync(result.html_path, "utf8");
-    expect(html).toContain("<title>Full Test Page</title>");
-  });
-
-  test("renders all sections in order", async () => {
-    const spec_path = writeSpec("render-order", fullSchema);
-    const result = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    const html = readFileSync(result.html_path, "utf8");
-    const navPos = html.indexOf("nav");
-    const heroPos = html.indexOf("Welcome");
-    const footerPos = html.indexOf("2024 Test Corp");
-    expect(navPos).toBeGreaterThan(-1);
-    expect(heroPos).toBeGreaterThan(navPos);
-    expect(footerPos).toBeGreaterThan(heroPos);
-  });
-
-  test("applies layout theme CSS variables", async () => {
-    const spec_path = writeSpec("render-theme", fullSchema);
-    const result = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    const html = readFileSync(result.html_path, "utf8");
-    expect(html).toContain("--sky-500");  // CSS var for hue scale
-    expect(html).toContain("--color-primary");  // CSS var for token
-  });
-
-  test("derives output filename from spec name", async () => {
-    const spec_path = writeSpec("my-test-page", minimalSchema);
-    const result = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    expect(result.html_path).toContain("my-test-page.html");
-  });
-
-  test("accepts custom output directory", async () => {
-    const spec_path = writeSpec("render-custom", minimalSchema);
-    const customDir = join(testDir, "custom-output");
-    mkdirSync(customDir, { recursive: true });
-    
-    const result = JSON.parse(await srv.call("render_page", { spec_path, output_dir: customDir }));
-    
-    expect(result.html_path).toContain(customDir);
-    expect(readFileSync(result.html_path, "utf8")).toContain("<!DOCTYPE html>");
+    expect(html).toContain("Full Test Page");
+    expect(html).toContain("<style>");
+    expect(html).toContain("--accent");
   });
 });
 
-describe("snapshot_html", () => {
-  test("renders HTML file to PNG screenshot", async () => {
-    // First render a page
+describe("snapshot", () => {
+  test("captures HTML to PNG screenshot", async () => {
     const spec_path = writeSpec("snapshot-test", minimalSchema);
-    const renderResult = JSON.parse(await srv.call("render_page", { spec_path }));
+    await srv.call("lint", { spec_path });
+    await srv.call("scaffold", { spec_path });
+    await srv.call("enrich", { spec_path });
+    await srv.call("style", { spec_path });
     
-    // Then snapshot it
-    const result = JSON.parse(await srv.call("snapshot_html", { 
-      html_path: renderResult.html_path 
-    }));
+    const snapshotResult = JSON.parse(
+      await srv.call("snapshot", { spec_path })
+    );
     
-    expect(typeof result.image_path).toBe("string");
-    expect(result.image_path).toMatch(/\.png$/);
-  });
-
-  test("creates snapshots directory if needed", async () => {
-    const spec_path = writeSpec("snapshot-dir", minimalSchema);
-    const renderResult = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    const result = JSON.parse(await srv.call("snapshot_html", { 
-      html_path: renderResult.html_path 
-    }));
-    
-    // Verify directory was created and file exists
-    const dir = result.image_path.split("/").slice(0, -1).join("/");
-    expect(dir).toContain("snapshots");
-  });
-
-  test("derives snapshot filename from HTML filename", async () => {
-    const spec_path = writeSpec("my-snapshot-page", minimalSchema);
-    const renderResult = JSON.parse(await srv.call("render_page", { spec_path }));
-    
-    const result = JSON.parse(await srv.call("snapshot_html", { 
-      html_path: renderResult.html_path 
-    }));
-    
-    expect(result.image_path).toContain("my-snapshot-page.png");
+    expect(typeof snapshotResult.image_path).toBe("string");
+    expect(snapshotResult.image_path).toMatch(/\.png$/);
+    expect(readFileSync(snapshotResult.image_path).byteLength).toBeGreaterThan(5000);
   });
 
   test("respects custom viewport dimensions", async () => {
     const spec_path = writeSpec("snapshot-viewport", minimalSchema);
-    const renderResult = JSON.parse(await srv.call("render_page", { spec_path }));
+    await srv.call("lint", { spec_path });
+    await srv.call("scaffold", { spec_path });
+    await srv.call("enrich", { spec_path });
+    await srv.call("style", { spec_path });
     
-    const result = JSON.parse(await srv.call("snapshot_html", { 
-      html_path: renderResult.html_path,
-      width: 375,
-      height: 667
-    }));
+    const snapshotResult = JSON.parse(
+      await srv.call("snapshot", { 
+        spec_path,
+        width: 375,
+        height: 667
+      })
+    );
     
-    expect(typeof result.image_path).toBe("string");
-    expect(result.image_path).toMatch(/\.png$/);
+    expect(snapshotResult.image_path).toMatch(/\.png$/);
   });
 });
 
-describe("E2E Smoke Test: Full Pipeline", () => {
+describe("E2E Pipeline: Full Render Chain", () => {
   const smokeSpec = {
     page: {
       meta: { 
         title: "Smoke Test" 
       },
+      layout: {
+        theme: "ink"
+      },
       sections: [
+        {
+          type: "navigation",
+          links: [{ text: "Home", href: "/" }]
+        },
         {
           type: "hero",
           content: {
             heading: "Smoke Test",
             subheading: "All tools working"
           }
+        },
+        {
+          type: "features",
+          variant: "grid-3",
+          items: [
+            { title: "Feature 1", description: "desc1" },
+            { title: "Feature 2", description: "desc2" }
+          ]
+        },
+        {
+          type: "footer",
+          copyright: "2024 Test"
         }
       ]
     }
   };
 
-  test("validates → renders → snapshots in sequence", async () => {
-    // 1. Write spec to file
+  test("lint → scaffold → enrich → style → snapshot chain", async () => {
     const spec_path = writeSpec("smoke-test", smokeSpec);
     console.log(`📝 Spec written to: ${spec_path}`);
 
-    // 2. VALIDATE: Schema should be valid
-    const validateResult = JSON.parse(
-      await srv.call("validate_schema", { spec_path })
+    // 1. LINT
+    const lintResult = JSON.parse(
+      await srv.call("lint", { spec_path })
     );
-    console.log(`✅ validate_schema: valid=${validateResult.valid}, errors=${validateResult.errors.length}`);
-    expect(validateResult.valid).toBe(true);
-    expect(validateResult.errors).toEqual([]);
+    console.log(`✅ lint: valid=${lintResult.valid}, errors=${lintResult.errors}`);
+    expect(lintResult.valid).toBe(true);
 
-    // 3. RENDER: Should produce HTML
-    const renderResult = JSON.parse(
-      await srv.call("render_page", { spec_path })
+    // 2. SCAFFOLD
+    const scaffoldResult = JSON.parse(
+      await srv.call("scaffold", { spec_path })
     );
-    const htmlStats = readFileSync(renderResult.html_path);
-    console.log(`📄 render_page: ${renderResult.html_path} (${htmlStats.byteLength} bytes)`);
-    expect(renderResult.html_path).toMatch(/\.html$/);
-    const html = htmlStats.toString();
-    expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("Smoke Test");
+    console.log(`📐 scaffold: ${scaffoldResult.scaffold_path} (${scaffoldResult.section_count} sections)`);
+    expect(scaffoldResult.section_count).toBeGreaterThan(0);
 
-    // 4. SNAPSHOT: Should produce PNG from rendered HTML
+    // 3. ENRICH
+    const enrichResult = JSON.parse(
+      await srv.call("enrich", { spec_path })
+    );
+    console.log(`💎 enrich: ${enrichResult.enrich_path} (${enrichResult.section_count} sections)`);
+    expect(enrichResult.section_count).toBe(scaffoldResult.section_count);
+
+    // 4. STYLE
+    const styleResult = JSON.parse(
+      await srv.call("style", { spec_path })
+    );
+    console.log(`🎨 style: ${styleResult.html_path} (${styleResult.bytes} bytes)`);
+    expect(styleResult.html_path).toMatch(/\.html$/);
+
+    // 5. SNAPSHOT
     const snapshotResult = JSON.parse(
-      await srv.call("snapshot_html", { 
-        html_path: renderResult.html_path 
-      })
+      await srv.call("snapshot", { spec_path })
     );
-    const pngStats = readFileSync(snapshotResult.image_path);
-    console.log(`🖼️  snapshot_html: ${snapshotResult.image_path} (${pngStats.byteLength} bytes)`);
+    const pngSize = readFileSync(snapshotResult.image_path).byteLength;
+    console.log(`🖼️  snapshot: ${snapshotResult.image_path} (${pngSize} bytes)`);
     expect(snapshotResult.image_path).toMatch(/\.png$/);
-    expect(snapshotResult.image_path).toContain("smoke-test");
+    expect(pngSize).toBeGreaterThan(5000);
 
-    // Verify files exist and have reasonable size
-    expect(htmlStats.byteLength).toBeGreaterThan(1000);
-    expect(pngStats.byteLength).toBeGreaterThan(5000);
-    console.log(`✨ Smoke test complete: all 3 tools executed successfully`);
+    console.log(`✨ Full pipeline complete: 5 stages executed successfully`);
   });
 });

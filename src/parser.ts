@@ -23,11 +23,44 @@ export function parseSchema(input: string | Record<string, any>): PageSchema {
   }
 
   if (!data.page) {
-    throw new Error("Schema must have a 'page' property");
+    // Check if user used flat format (sections at root level)
+    if (data.sections || data.meta || data.layout) {
+      throw new Error(
+        `Schema must have a 'page' property wrapping meta, layout, and sections.\n\n` +
+        `Expected format:\n` +
+        `page:\n` +
+        `  meta:\n` +
+        `    title: ...\n` +
+        `  layout:\n` +
+        `    theme: ...\n` +
+        `  sections:\n` +
+        `    - type: ...\n\n` +
+        `It looks like you used a flat format (sections/meta/layout at root level). ` +
+        `Please wrap them in a 'page:' property.`
+      );
+    }
+    throw new Error(
+      `Schema must have a 'page' property.\n\n` +
+      `Expected format:\n` +
+      `page:\n` +
+      `  meta:\n` +
+      `    title: ...\n` +
+      `  sections:\n` +
+      `    - type: ...`
+    );
   }
 
   if (!data.page.sections || !Array.isArray(data.page.sections)) {
-    throw new Error("Page must have a 'sections' array");
+    throw new Error(
+      `Page must have a 'sections' array.\n\n` +
+      `Expected format:\n` +
+      `page:\n` +
+      `  sections:\n` +
+      `    - type: hero\n` +
+      `      ...\n` +
+      `    - type: features\n` +
+      `      ...`
+    );
   }
 
   return data as PageSchema;

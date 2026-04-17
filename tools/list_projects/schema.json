@@ -1,0 +1,31 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {},
+    "description": "No parameters required. Lists all Cloudflare Pages projects accessible with current credentials."
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "projects": {
+        "type": "array",
+        "description": "Array of all Cloudflare Pages projects in the account",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { 
+              "type": "string",
+              "description": "Project name (lowercase-hyphenated, unique per account)",
+              "x-semantic-type": "ProjectName"
+            },
+            "url": { 
+              "type": "string",
+              "description": "Project base URL (https://{name}.pages.dev)",
+              "x-semantic-type": "CloudflareURL"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "spec_path": {
+        "type": "string",
+        "description": "Absolute path to the Gutenberg page specification YAML file to validate.",
+        "x-semantic-type": "GutenbergSpecPath"
+      }
+    },
+    "required": ["spec_path"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "lint_path": {
+        "type": "string",
+        "description": "Path to written {name}.lint.json artifact containing parsed schema and validation result.",
+        "x-semantic-type": "ArtifactPath"
+      },
+      "valid": {
+        "type": "boolean",
+        "description": "True if spec passed validation (no blocking errors)"
+      },
+      "errors": {
+        "type": "integer",
+        "description": "Count of validation errors"
+      },
+      "warnings": {
+        "type": "integer",
+        "description": "Count of validation warnings"
+      }
+    }
+  }
+}
