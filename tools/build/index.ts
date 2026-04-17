@@ -1,11 +1,13 @@
 import { promises as fs } from "fs";
-import { dirname, basename } from "path";
+import { dirname, basename, join } from "path";
 import {
   parseProjectConfig,
   discoverPages,
+  discoverTemplates,
   buildNavStructure,
   getRenderedDir,
   getArtifactPath,
+  getTemplateMetadata,
 } from "../../src/project.js";
 import { lint, scaffold, enrich, style } from "../../src/pipeline/index.js";
 import type { PageSchema } from "../../src/types.js";
@@ -22,12 +24,29 @@ export async function handler(input: Record<string, unknown>) {
   const projectRoot = dirname(project_path);
   const renderedDir = await getRenderedDir(project_path);
   const pages = await discoverPages(project_path);
+  const templates = await discoverTemplates(projectRoot);
 
-  if (pages.length === 0) {
-    throw new Error(`No page specs found in project at ${projectRoot}`);
+  if (pages.length === 0 && templates.length === 0) {
+    throw new Error(`No pages or templates found in project at ${projectRoot}`);
   }
 
   await fs.mkdir(renderedDir, { recursive: true });
+
+  // DISCOVERY: Validate templates (but don't render them)
+  if (templates.length > 0) {
+    console.error(`[build] Found ${templates.length} template(s), validating...`);
+    const templateMetadata = await getTemplateMetadata(projectRoot);
+    console.error(`[build] ${templateMetadata.length} template(s) valid`);
+    
+    // Store metadata in .gutenberg-edit/ for later use
+    const editDir = join(projectRoot, ".gutenberg-edit");
+    await fs.mkdir(editDir, { recursive: true });
+    await fs.writeFile(
+      join(editDir, "templates.json"),
+      JSON.stringify(templateMetadata, null, 2),
+      "utf8"
+    );
+  }
 
   // FIRST PASS: lint all pages to gather titles for nav
   console.error(`[build] Linting ${pages.length} pages...`);

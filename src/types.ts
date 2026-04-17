@@ -21,6 +21,29 @@ export interface PageLayout {
   type?: "standard" | "wide" | "narrow" | "docs";
 }
 
+/**
+ * Template configuration for dynamic, editable pages
+ * Templates are not built to HTML - they define structure for runtime-created entries
+ */
+export interface TemplateConfig {
+  name: string;           // e.g., "diary", "blog-post"
+  route: string;          // e.g., "/diary/[date]", "/posts/[slug]"
+  routeParam: string;     // e.g., "date", "slug"
+  storage: "local" | "r2"; // Where entries are stored
+}
+
+/**
+ * Template schema - defines a dynamic, editable page structure
+ */
+export interface TemplateSchema {
+  template: TemplateConfig;
+  page: {
+    meta?: PageMeta;
+    layout?: PageLayout;
+    sections: Section[];
+  };
+}
+
 export interface Section {
   type: ComponentType;
   variant?: string;
@@ -169,3 +192,15 @@ export type Vibe = "serene" | "gentle" | "steady" | "vibrant" | "intense" | "urg
 export type Intent = "engage" | "inform" | "persuade" | "direct";
 export type Narrative = "exposition" | "inciting" | "rising" | "climax" | "falling" | "resolution";
 export type Cohesion = "opens" | "continues" | "amplifies" | "supports" | "contrasts" | "pivots" | "echoes" | "resolves" | "closes";
+
+// Union type for both static pages and dynamic templates
+export type GutenbergSpec = PageSchema | TemplateSchema;
+
+// Type guard functions
+export function isPageSchema(spec: GutenbergSpec): spec is PageSchema {
+  return "page" in spec && !("template" in spec);
+}
+
+export function isTemplateSchema(spec: GutenbergSpec): spec is TemplateSchema {
+  return "template" in spec && "page" in spec;
+}

@@ -1,0 +1,50 @@
+{
+  "input": {
+    "type": "object",
+    "properties": {
+      "project_path": {
+        "type": "string",
+        "description": "Absolute path to gutenberg.yaml"
+      },
+      "name": {
+        "type": "string",
+        "description": "Template name (e.g., 'diary', 'blog-post')"
+      },
+      "route": {
+        "type": "string",
+        "description": "Route pattern (e.g., '/diary/[date]', '/posts/[slug]')"
+      },
+      "param": {
+        "type": "string",
+        "description": "Route parameter name (e.g., 'date', 'slug')"
+      }
+    },
+    "required": ["project_path", "name", "route", "param"],
+    "additionalProperties": false
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "template_path": {
+        "type": "string",
+        "description": "Path to created template file"
+      },
+      "function_path": {
+        "type": "string",
+        "description": "Path to created Worker function"
+      },
+      "wrangler_path": {
+        "type": "string",
+        "description": "Path to wrangler.toml"
+      },
+      "data_path": {
+        "type": "string",
+        "description": "Path to local data directory"
+      },
+      "message": {
+        "type": "string",
+        "description": "Success message"
+      }
+    }
+  }
+}

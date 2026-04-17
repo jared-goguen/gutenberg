@@ -1,4 +1,4 @@
-import { PageSchema, Section, ValidationResult, ValidationError, ComponentType } from "./types.js";
+import { PageSchema, TemplateSchema, Section, ValidationResult, ValidationError, ComponentType } from "./types.js";
 
 const VALID_COMPONENT_TYPES: ComponentType[] = [
   "hero",
@@ -258,4 +258,85 @@ export function validateSection(section: Section, index: number): ValidationErro
   }
 
   return errors;
+}
+
+/**
+ * Validate a TemplateSchema
+ */
+export function validateTemplate(schema: TemplateSchema): ValidationResult {
+  const errors: ValidationError[] = [];
+  const warnings: string[] = [];
+
+  // Validate template config
+  if (!schema.template) {
+    errors.push({
+      path: "template",
+      message: "Template configuration is required",
+    });
+    return { valid: false, errors, warnings };
+  }
+
+  if (!schema.template.name) {
+    errors.push({
+      path: "template.name",
+      message: "Template name is required (e.g., 'diary', 'blog-post')",
+    });
+  }
+
+  if (!schema.template.route) {
+    errors.push({
+      path: "template.route",
+      message: "Template route is required (e.g., '/diary/[date]')",
+    });
+  } else {
+    // Validate route format: /path/[param]
+    const routePattern = /^\/[a-z0-9-/]*\[[a-z0-9-]+\]$/i;
+    if (!routePattern.test(schema.template.route)) {
+      errors.push({
+        path: "template.route",
+        message: "Route must match format '/path/[param]' (e.g., '/diary/[date]')",
+      });
+    }
+  }
+
+  if (!schema.template.routeParam) {
+    errors.push({
+      path: "template.routeParam",
+      message: "Route parameter name is required (e.g., 'date')",
+    });
+  } else if (!/^[a-z0-9-]+$/i.test(schema.template.routeParam)) {
+    errors.push({
+      path: "template.routeParam",
+      message: "Route parameter must be alphanumeric (e.g., 'date', 'slug')",
+    });
+  }
+
+  if (!schema.template.storage || !["local", "r2"].includes(schema.template.storage)) {
+    errors.push({
+      path: "template.storage",
+      message: "Storage must be 'local' or 'r2'",
+    });
+  }
+
+  // Validate page structure (reuse page validation)
+  const pageSchema: PageSchema = { page: schema.page };
+  const pageValidation = validateSchema(pageSchema);
+  
+  if (!pageValidation.valid) {
+    // Prefix page errors with "page." path
+    errors.push(
+      ...pageValidation.errors.map(err => ({
+        ...err,
+        path: `page.${err.path}`,
+      }))
+    );
+  }
+
+  warnings.push(...pageValidation.warnings);
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    warnings,
+  };
 }

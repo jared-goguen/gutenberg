@@ -97,6 +97,7 @@ describe("Tool discovery", () => {
       "create_project",
       "enrich",
       "get_project",
+      "init_template",
       "lint",
       "list_projects",
       "publish",

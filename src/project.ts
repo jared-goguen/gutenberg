@@ -7,7 +7,8 @@
 import { promises as fs } from "fs";
 import { dirname, join, basename, extname, relative } from "path";
 import { parse as parseYaml } from "yaml";
-import type { PageSchema } from "./types.js";
+import type { PageSchema, TemplateSchema } from "./types.js";
+import { validateTemplate } from "./validator.js";
 
 export interface ProjectConfig {
   project: {
@@ -182,4 +183,98 @@ export async function buildNavStructure(
   }
   
   return nav;
+}
+
+/**
+ * Discover all template files in the project
+ * Templates are YAML files in templates/ directory
+ */
+export async function discoverTemplates(projectRoot: string): Promise<string[]> {
+  const templatesDir = join(projectRoot, "templates");
+  
+  try {
+    await fs.access(templatesDir);
+  } catch {
+    // templates/ directory doesn't exist
+    return [];
+  }
+  
+  const templates: string[] = [];
+  
+  async function walkDir(dir: string) {
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = join(dir, entry.name);
+        
+        if (entry.isDirectory()) {
+          await walkDir(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith(".yaml")) {
+          templates.push(fullPath);
+        }
+      }
+    } catch (err) {
+      // Silently skip directories we can't read
+    }
+  }
+  
+  await walkDir(templatesDir);
+  return templates.sort();
+}
+
+/**
+ * Parse a template file and validate it
+ */
+export async function parseTemplate(templatePath: string): Promise<{ 
+  schema: TemplateSchema; 
+  validation: ReturnType<typeof validateTemplate>;
+}> {
+  const content = await fs.readFile(templatePath, "utf8");
+  const parsed = parseYaml(content) as TemplateSchema;
+  const validation = validateTemplate(parsed);
+  
+  return { schema: parsed, validation };
+}
+
+/**
+ * Template metadata for code generation
+ */
+export interface TemplateMetadata {
+  name: string;
+  route: string;
+  routeParam: string;
+  storage: "local" | "r2";
+  templatePath: string;
+}
+
+/**
+ * Extract metadata from all templates in a project
+ */
+export async function getTemplateMetadata(projectRoot: string): Promise<TemplateMetadata[]> {
+  const templates = await discoverTemplates(projectRoot);
+  const metadata: TemplateMetadata[] = [];
+  
+  for (const templatePath of templates) {
+    try {
+      const { schema, validation } = await parseTemplate(templatePath);
+      
+      if (!validation.valid) {
+        console.warn(`Template validation failed: ${templatePath}`);
+        continue;
+      }
+      
+      metadata.push({
+        name: schema.template.name,
+        route: schema.template.route,
+        routeParam: schema.template.routeParam,
+        storage: schema.template.storage,
+        templatePath,
+      });
+    } catch (err) {
+      console.warn(`Failed to parse template: ${templatePath}`, err);
+    }
+  }
+  
+  return metadata;
 }
