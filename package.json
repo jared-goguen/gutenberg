@@ -33,7 +33,8 @@
   "files": [
     "dist/**/*",
     "src/**/*.ts",
-    "tools/**/*"
+    "tools/**/*",
+    "tsconfig.json"
   ],
   "scripts": {
     "prepare": "tsc --noEmitOnError || true",
