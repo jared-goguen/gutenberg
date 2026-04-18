@@ -5,7 +5,9 @@
   "description": "Dynamic page builder and edit mode framework for Cloudflare Pages",
   "main": "./dist/index-lib.js",
   "types": "./dist/index-lib.d.ts",
-
+  "bin": {
+    "gutenberg": "./dist/cli.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index-lib.d.ts",
@@ -33,6 +35,7 @@
     "src/**/*.ts"
   ],
   "scripts": {
+    "prepare": "tsc --noEmitOnError || true",
     "start": "bun run src/index.ts",
     "test": "bun test",
     "build": "tsc --noEmitOnError",
