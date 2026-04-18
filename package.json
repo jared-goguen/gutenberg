@@ -2,14 +2,41 @@
   "name": "gutenberg",
   "version": "1.0.0",
   "type": "module",
-  "main": "src/index.js",
-  "bin": {
-    "gutenberg": "./src/cli.ts"
+  "description": "Dynamic page builder and edit mode framework for Cloudflare Pages",
+  "main": "./dist/index-lib.js",
+  "types": "./dist/index-lib.d.ts",
+
+  "exports": {
+    ".": {
+      "types": "./dist/index-lib.d.ts",
+      "import": "./dist/index-lib.js"
+    },
+    "./workers": {
+      "types": "./dist/workers/index.d.ts",
+      "import": "./dist/workers/index.js"
+    },
+    "./pipeline": {
+      "types": "./dist/pipeline/index.d.ts",
+      "import": "./dist/pipeline/index.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "import": "./dist/types.js"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js"
+    }
   },
+  "files": [
+    "dist/**/*",
+    "src/**/*.ts"
+  ],
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "build": "tsc",
+    "build": "tsc --noEmitOnError",
+    "build:watch": "tsc --watch --noEmitOnError",
     "build:binary": "bun build --compile --outfile gutenberg ./src/cli.ts"
   },
   "dependencies": {

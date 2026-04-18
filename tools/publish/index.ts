@@ -75,7 +75,7 @@ export async function handler(input: Record<string, unknown>) {
   const files = await readDirectory(renderedDir);
 
   if (Object.keys(files).length === 0) {
-    throw new Error(`No files found in directory: ${deployDir}`);
+    throw new Error(`No files found in directory: ${renderedDir}`);
   }
 
   const fileEntries = Object.entries(files).map(([rawPath, content]) => {

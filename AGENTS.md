@@ -341,6 +341,120 @@ Reads `gutenberg.yaml` → gets `project_name` → deploys `rendered/` → retur
 
 ---
 
+## Edit Mode: Dynamic, Form-Based Pages
+
+Edit mode enables **templates** — reusable structures for dynamic, form-based pages (diaries, blogs, surveys).
+
+### Key Differences: Pages vs Templates
+
+| | Pages | Templates |
+|---|-------|-----------|
+| Location | Project root or `pages/` | `templates/` directory |
+| Built | Yes, to HTML | No, never rendered |
+| Usage | Static, built once | Dynamic, created at runtime |
+| Editing | None | Via web form |
+| Storage | None (static) | R2 entries |
+
+### Template Structure
+
+Templates define **both structure AND editability**:
+
+```yaml
+template:
+  name: diary
+  route: /diary/[date]
+  routeParam: date
+  storage: r2
+
+page:
+  meta:
+    title: "Diary — {{DATE}}"
+  sections:
+    - type: hero
+      _editable: true    # Make this section editable
+      content:
+        heading: "Daily Card {{DATE}}"
+    
+    - type: table
+      _editable: true    # Users can edit table cells
+      label: EMOTIONS
+      cells: [...]
+    
+    - type: content
+      _editable: true    # Users can edit markdown
+      variant: prose
+      markdown: "## Notes\n..."
+```
+
+### Build Pipeline with Templates
+
+```
+gutenberg build
+├── Discover pages/ and templates/
+├── Lint pages → rendered/*.lint.json
+├── Build pages → rendered/*.html
+├── Validate templates (but DON'T render them)
+└── Write template metadata → .gutenberg-edit/templates.json
+```
+
+**Important:** `gutenberg build` only renders **pages** to HTML. Templates are validated but never rendered.
+
+### Initialization
+
+```bash
+# Initialize a new template with route and parameter
+gutenberg init_template diary --route="/diary/[date]" --param=date
+
+# Creates:
+# - templates/diary.yaml (template definition)
+# - functions/diary/[date].ts (Worker handler)
+# - functions/index.ts (index handler)
+# - wrangler.toml (Cloudflare config)
+# - data/diary/ (local storage for dev)
+```
+
+### Runtime: Workers Functions
+
+Templates are rendered dynamically by Cloudflare Pages Functions using Gutenberg utilities:
+
+```typescript
+// functions/diary/[date].ts
+import { createEditHandler } from 'gutenberg/workers';
+
+export async function onRequest(context) {
+  return createEditHandler({
+    templateKey: 'template.yaml',
+    bucket: context.env.DIARY_BUCKET,
+    routeParam: 'date',
+    paramValidator: (d) => /^\d{4}-\d{2}-\d{2}$/.test(d),
+  })(context);
+}
+```
+
+The handler:
+- GET `/diary/2026-04-17` → renders entry (view mode)
+- GET `/diary/2026-04-17?mode=edit` → renders form (edit mode)
+- POST `/diary/2026-04-17?mode=save` → saves form data to R2
+
+### Local Development
+
+```bash
+# Build pages (templates ignored)
+gutenberg build
+
+# Start Cloudflare dev server
+wrangler pages dev ./rendered
+
+# Edit entries locally (git-friendly YAML)
+# Stored in data/diary/*.yaml
+```
+
+### For More Details
+
+See `docs/edit-mode.md` for complete edit mode documentation.
+
+---
+
 ## Important Rules for Agents
 
 1. **Never write ad-hoc scripts** — if a workflow might be repeated, create a tool instead
@@ -348,3 +462,5 @@ Reads `gutenberg.yaml` → gets `project_name` → deploys `rendered/` → retur
 3. **Rely on convention** — pipeline tools derive all paths automatically, don't pass paths manually
 4. **gutenberg.yaml is the unit of deployment** — use `build` + `publish` for multi-page sites
 5. **Individual pipeline tools are for inspection** — use them when debugging or exploring artifacts
+6. **Templates are separate from pages** — discovered from `templates/` directory, validated but never rendered
+7. **Edit mode uses Workers Functions** — not a separate system, just a different rendering mode
