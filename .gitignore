@@ -1,5 +1,4 @@
 node_modules/
-dist/
 *.js.map
 
 # Generated output from render_page and snapshot_html tools

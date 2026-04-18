@@ -1,0 +1,1 @@
+{"version":3,"file":"lint.d.ts","sourceRoot":"","sources":["../../../src/pipeline/lint.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AAEH,OAAO,KAAK,EAAE,UAAU,EAAE,gBAAgB,EAAE,MAAM,aAAa,CAAC;AAIhE,MAAM,WAAW,UAAU;IACzB,MAAM,EAAE,UAAU,CAAC;IACnB,MAAM,EAAE,gBAAgB,CAAC;CAC1B;AAED;;;;GAIG;AACH,wBAAgB,IAAI,CAAC,WAAW,EAAE,MAAM,GAAG,UAAU,CAQpD"}
