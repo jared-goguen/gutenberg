@@ -1,10 +1,31 @@
 {
-  "name": "gutenberg",
-  "version": "1.0.0",
+  "name": "@jared-goguen/gutenberg",
+  "version": "0.1.0",
   "type": "module",
   "description": "Dynamic page builder and edit mode framework for Cloudflare Pages",
   "main": "./dist/index-lib.js",
   "types": "./dist/index-lib.d.ts",
+  "license": "UNLICENSED",
+  "author": "Jared Goguen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jared-goguen/gutenberg.git"
+  },
+  "homepage": "https://github.com/jared-goguen/gutenberg#readme",
+  "bugs": {
+    "url": "https://github.com/jared-goguen/gutenberg/issues"
+  },
+  "keywords": [
+    "gutenberg",
+    "cloudflare-pages",
+    "mcp",
+    "model-context-protocol",
+    "semantic-html",
+    "page-builder",
+    "edit-mode",
+    "dynamic-pages",
+    "r2-storage"
+  ],
   "bin": {
     "gutenberg": "./dist/cli.js"
   },
