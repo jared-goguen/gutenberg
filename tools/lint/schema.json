@@ -2,35 +2,23 @@
   "input": {
     "type": "object",
     "properties": {
-      "spec_path": {
+      "yaml": {
         "type": "string",
-        "description": "Absolute path to the Gutenberg page specification YAML file to validate.",
-        "x-semantic-type": "GutenbergSpecPath"
+        "description": "Page spec YAML to lint. Provide this or filePath or directory."
+      },
+      "filePath": {
+        "type": "string",
+        "description": "Absolute path to YAML spec file."
+      },
+      "directory": {
+        "type": "string",
+        "description": "Absolute path to a directory. Recursively lints all .yaml files. Returns per-file results sorted by issue count (most issues first)."
+      },
+      "checks": {
+        "type": "string",
+        "description": "Comma-separated check IDs (e.g. 'V1,V3'). Omit for all. Only filters visual checks — structural validation always runs."
       }
     },
-    "required": ["spec_path"],
     "additionalProperties": false
-  },
-  "output": {
-    "type": "object",
-    "properties": {
-      "lint_path": {
-        "type": "string",
-        "description": "Path to written {name}.lint.json artifact containing parsed schema and validation result.",
-        "x-semantic-type": "ArtifactPath"
-      },
-      "valid": {
-        "type": "boolean",
-        "description": "True if spec passed validation (no blocking errors)"
-      },
-      "errors": {
-        "type": "integer",
-        "description": "Count of validation errors"
-      },
-      "warnings": {
-        "type": "integer",
-        "description": "Count of validation warnings"
-      }
-    }
   }
 }
