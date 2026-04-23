@@ -225,7 +225,7 @@ function formDataToYAML(
       if (heading) {
         section.content.heading = heading.toString();
       }
-      delete section._editable;
+      // Preserve _editable flag so entry remains editable
     } else if (section.type === 'table' && section._editable) {
       for (const cell of section.cells) {
         const fieldName = `${section.label}__${cell.label}`;
@@ -241,13 +241,13 @@ function formDataToYAML(
           }
         }
       }
-      delete section._editable;
+      // Preserve _editable flag so entry remains editable
     } else if (section.type === 'content' && section._editable) {
       const markdown = formData.get('content__markdown');
       if (markdown) {
         section.markdown = markdown.toString();
       }
-      delete section._editable;
+      // Preserve _editable flag so entry remains editable
     }
   }
 

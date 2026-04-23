@@ -150,7 +150,7 @@ function formDataToYAML(formData, template, paramValue, routeParam) {
             if (heading) {
                 section.content.heading = heading.toString();
             }
-            delete section._editable;
+            // Preserve _editable flag so entry remains editable
         }
         else if (section.type === 'table' && section._editable) {
             for (const cell of section.cells) {
@@ -168,14 +168,14 @@ function formDataToYAML(formData, template, paramValue, routeParam) {
                     }
                 }
             }
-            delete section._editable;
+            // Preserve _editable flag so entry remains editable
         }
         else if (section.type === 'content' && section._editable) {
             const markdown = formData.get('content__markdown');
             if (markdown) {
                 section.markdown = markdown.toString();
             }
-            delete section._editable;
+            // Preserve _editable flag so entry remains editable
         }
     }
     return YAML.stringify(spec);

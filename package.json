@@ -1,6 +1,6 @@
 {
   "name": "@jared-goguen/gutenberg",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Dynamic page builder and edit mode framework for Cloudflare Pages",
   "main": "./dist/index-lib.js",
