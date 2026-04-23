@@ -14,7 +14,7 @@ export function renderCards(spec: CardsSpec, ctx: RenderContext, enrichment?: Bl
   // Resolve per-item colors (handles explicit, tone/progression-injected, and scheme)
   // Override text shade to 300 — card titles sit on dark backgrounds and need a light, vivid accent
   const effectiveScheme = spec.palette ?? ctx.themeName;
-  const cardShades = { ...ctx.themeTokens.shades, text: 300 };
+  const cardShades = { ...ctx.themeTokens.shades, text: 300 as const };
   const resolved = resolveColors(items, effectiveScheme, undefined, cardShades);
 
   const cards = items.map((item, i) => {
