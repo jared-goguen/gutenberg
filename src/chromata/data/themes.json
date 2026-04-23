@@ -1,0 +1,184 @@
+{
+  "cloudflare": {
+    "colors": [
+      "orange",
+      "amber",
+      "teal",
+      "azure",
+      "violet"
+    ],
+    "description": "Brand identity — deep orange anchor, content-first dark surfaces, Helvetica Neue typography, 1px radius.",
+    "shades": {
+      "bg": 500,
+      "text": 50,
+      "border": 400
+    },
+    "surface": {
+      "base": "rgb(15,15,18)",
+      "deep": "rgb(10,10,13)",
+      "mid": "rgb(24,24,28)",
+      "raised": "rgb(32,32,36)"
+    },
+    "typography": {
+      "body": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "heading": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "mono": "'SF Mono', Menlo, Monaco, 'Courier New', monospace"
+    },
+    "shape": {
+      "sm": "1px",
+      "md": "1px",
+      "lg": "1px"
+    },
+    "tracking": {
+      "tight": "-0.01em",
+      "wide": "0.12em"
+    },
+    "stylesheet": "cloudflare"
+  },
+  "reactor": {
+    "colors": [
+      "orange",
+      "amber",
+      "vermillion",
+      "teal",
+      "azure"
+    ],
+    "description": "Reactor — CF orange accent on true-black, monospace-forward, warm branding",
+    "shades": {
+      "bg": 500,
+      "text": 50,
+      "border": 500
+    },
+    "surface": {
+      "base": "rgb(7,7,12)",
+      "deep": "rgb(10,10,15)",
+      "mid": "rgb(18,18,26)",
+      "raised": "rgb(20,20,31)"
+    },
+    "typography": {
+      "body": "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "heading": "'Helvetica Neue', Helvetica, -apple-system, BlinkMacSystemFont, sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', Menlo, Monaco, monospace",
+      "fontUrl": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    },
+    "shape": {
+      "sm": "3px",
+      "md": "6px",
+      "lg": "8px"
+    },
+    "tracking": {
+      "tight": "-0.01em",
+      "wide": "0.12em"
+    },
+    "stylesheet": "classic"
+  },
+  "wire": {
+    "colors": [
+      "cyan",
+      "teal",
+      "azure",
+      "sky",
+      "blue"
+    ],
+    "description": "Wire — diagrammatic precision-first engineering aesthetic. Cyan/teal accent on cool-tinted dark surfaces, Inter typography, hairline borders.",
+    "shades": {
+      "bg": 500,
+      "text": 50,
+      "border": 400
+    },
+    "surface": {
+      "base": "rgb(11,13,18)",
+      "deep": "rgb(8,10,14)",
+      "mid": "rgb(17,20,28)",
+      "raised": "rgb(22,26,36)"
+    },
+    "typography": {
+      "body": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      "heading": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      "mono": "'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, monospace",
+      "fontUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    },
+    "shape": {
+      "sm": "2px",
+      "md": "4px",
+      "lg": "6px"
+    },
+    "tracking": {
+      "tight": "-0.02em",
+      "wide": "0.1em"
+    },
+    "stylesheet": "wire"
+  },
+  "mono": {
+    "colors": [
+      "vermillion",
+      "rose",
+      "amber",
+      "teal",
+      "azure"
+    ],
+    "description": "Mono — disciplined brutalism on strict 8px grid. Red/vermillion accent, near-black surfaces, Helvetica Neue at normal weights, zero radius, consistent horizontal containment.",
+    "shades": {
+      "bg": 500,
+      "text": 50,
+      "border": 400
+    },
+    "surface": {
+      "base": "rgb(14,14,16)",
+      "deep": "rgb(9,9,11)",
+      "mid": "rgb(22,22,26)",
+      "raised": "rgb(28,28,32)"
+    },
+    "typography": {
+      "body": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "heading": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "mono": "'SF Mono', Menlo, Monaco, 'Courier New', monospace"
+    },
+    "shape": {
+      "sm": "0px",
+      "md": "0px",
+      "lg": "0px"
+    },
+    "tracking": {
+      "tight": "-0.02em",
+      "wide": "0.12em"
+    },
+    "stylesheet": "mono"
+  },
+  "ink": {
+    "colors": [
+      "amber",
+      "orange",
+      "teal",
+      "azure",
+      "violet"
+    ],
+    "description": "Ink — high-contrast typographic dark theme. Warm cream on near-black, old gold accent, Helvetica Neue.",
+    "shades": {
+      "bg": 500,
+      "text": 50,
+      "border": 400
+    },
+    "surface": {
+      "base": "rgb(15,15,18)",
+      "deep": "rgb(10,10,13)",
+      "mid": "rgb(28,28,33)",
+      "raised": "rgb(24,24,28)"
+    },
+    "typography": {
+      "body": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "heading": "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "mono": "'SF Mono', Menlo, Monaco, 'Courier New', monospace"
+    },
+    "shape": {
+      "sm": "0px",
+      "md": "0px",
+      "lg": "0px"
+    },
+    "tracking": {
+      "tight": "-0.01em",
+      "wide": "0.12em"
+    },
+    "stylesheet": "ink"
+  }
+}
