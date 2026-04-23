@@ -151,26 +151,12 @@ function getEditModeCSS(): string {
 .btn-edit:hover {
   background: rgba(0,0,0,0.95);
 }
-/* Table input styles */
-.table-cell input[type="number"],
-.table-cell input[type="text"] {
-  width: 100%;
-  padding: 0.35rem 0.3rem;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  text-align: center;
-  font-weight: 700;
-  border-radius: 2px;
-  font-size: 0.75rem;
+/* Edit mode — hidden sections */
+.gb-edit-hidden {
+  display: none;
 }
-.table-cell input[type="checkbox"] {
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-}
-/* Hero edit input */
-.hero-heading-input {
+/* Edit mode — text input (hero heading, text table cells) */
+.gb-input-text {
   width: 100%;
   background: transparent;
   border: 1px solid rgba(255,255,255,0.2);
@@ -182,8 +168,8 @@ function getEditModeCSS(): string {
   padding: 0.5rem;
   border-radius: 4px;
 }
-/* Content edit textarea */
-.content-markdown-input {
+/* Edit mode — textarea (content markdown) */
+.gb-input-textarea {
   width: 100%;
   min-height: 200px;
   padding: 1rem;
@@ -195,6 +181,24 @@ function getEditModeCSS(): string {
   border-radius: 4px;
   resize: vertical;
   line-height: 1.6;
+}
+/* Edit mode — number input (table numeric cells) */
+.gb-input-number {
+  width: 100%;
+  padding: 0.35rem 0.3rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  text-align: center;
+  font-weight: 700;
+  border-radius: 2px;
+  font-size: 0.75rem;
+}
+/* Edit mode — checkbox (table bool cells) */
+.gb-input-checkbox {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
 }
 `;
 }

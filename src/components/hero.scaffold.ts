@@ -15,18 +15,11 @@ import { createNode } from "../scaffold/node.js";
  * - centered: vertical stack, content centered, image below
  * - split: two-column grid, text left, image right (reverses on mobile)
  * - full-bleed: full-width background with centered overlay
- * 
- * @param data Hero data
- * @param mode 'view' (default) or 'edit' - controls if heading is editable
- * @param section Original section object (contains _editable flag)
+ *
+ * Always produces view-mode output. Edit-mode transformation is handled
+ * by the editify stage downstream.
  */
-export function scaffoldHero(data: HeroData, mode: 'view' | 'edit' = 'view', section?: any): RenderNode {
-  // In edit mode, render as input field (handled in edit-specific function)
-  if (mode === 'edit' && section?._editable === true) {
-    return scaffoldHeroEdit(data);
-  }
-
-  // View mode or non-editable hero - use standard variants
+export function scaffoldHero(data: HeroData): RenderNode {
   switch (data.variant) {
     case "centered":
       return scaffoldHeroCentered(data);
@@ -37,29 +30,6 @@ export function scaffoldHero(data: HeroData, mode: 'view' | 'edit' = 'view', sec
     default:
       return scaffoldHeroCentered(data);
   }
-}
-
-function scaffoldHeroEdit(data: HeroData): RenderNode {
-  const children: (RenderNode | string)[] = [
-    createNode("div", {
-      layout: { width: "narrow", align: "left" },
-      children: [
-        // Heading as input field
-        createNode("input", {
-          attrs: {
-            type: "text",
-            name: "hero__heading",
-            value: data.heading,
-            class: "hero-heading-input"
-          },
-        }),
-      ],
-    }),
-  ];
-  return createNode("section", {
-    role: "section-root",
-    children,
-  });
 }
 
 function scaffoldHeroCentered(data: HeroData): RenderNode {

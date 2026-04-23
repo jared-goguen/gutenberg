@@ -73,6 +73,7 @@
     "yaml": "^2.4.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260423.1",
     "@types/bun": "latest",
     "@types/marked": "^6.0.0",
     "typescript": "^5.0.0"

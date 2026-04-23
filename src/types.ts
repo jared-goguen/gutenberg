@@ -49,6 +49,9 @@ export interface Section {
   variant?: string;
   id?: string;
 
+  /** When true, editify transforms this section into form inputs in edit mode */
+  _editable?: boolean;
+
   // Semantic axes — orthogonal dimensions for page cohesion
   vibe?: "serene" | "gentle" | "steady" | "vibrant" | "intense" | "urgent";
   intent?: "engage" | "inform" | "persuade" | "direct";

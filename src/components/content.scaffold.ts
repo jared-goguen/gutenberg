@@ -16,22 +16,11 @@ import { createNode } from "../scaffold/node.js";
  * - Section root with variant layout
  * - Width-constrained container (prose/narrow/standard/wide)
  * - Content div with prose role containing markdown or html
- * 
- * @param data Content data
- * @param mode 'view' (default) or 'edit' - controls if markdown is editable
- * @param section Original section object (contains _editable flag)
+ *
+ * Always produces view-mode output. Edit-mode transformation is handled
+ * by the editify stage downstream.
  */
-export function scaffoldContent(data: ContentData, mode: 'view' | 'edit' = 'view', section?: any): RenderNode {
-  // In edit mode, render as textarea if editable
-  if (mode === 'edit' && section?._editable === true) {
-    return scaffoldContentEdit(data);
-  }
-
-  // View mode - standard rendering
-  return scaffoldContentView(data);
-}
-
-function scaffoldContentView(data: ContentData): RenderNode {
+export function scaffoldContent(data: ContentData): RenderNode {
   // Map variant to width constraint
   const widthMap: Record<string, string> = {
     prose: "narrow",
@@ -69,24 +58,4 @@ function scaffoldContentView(data: ContentData): RenderNode {
   });
 }
 
-function scaffoldContentEdit(data: ContentData): RenderNode {
-  return createNode("section", {
-    role: "section-root",
-    layout: { variant: data.variant },
-    children: [
-      createNode("div", {
-        layout: { width: "narrow", align: "left" },
-        children: [
-          createNode("textarea", {
-            attrs: {
-              name: "content__markdown",
-              rows: "15",
-              class: "content-markdown-input",
-            },
-            children: [data.markdown || ''],
-          }),
-        ],
-      }),
-    ],
-  });
-}
+

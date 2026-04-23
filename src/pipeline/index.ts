@@ -7,6 +7,7 @@
 
 export { lint } from "./lint.js";
 export { scaffold } from "./scaffold.js";
+export { editify } from "./editify.js";
 export { enrich } from "./enrich.js";
 export { style } from "./style.js";
 export type { LintOutput } from "./lint.js";

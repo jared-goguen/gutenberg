@@ -81,12 +81,15 @@ const roleToClasses: Record<string, string[]> = {
   "table-cell-label": ["table-cell", "cell-label"],
   "table-cell-header": ["table-cell", "cell-header"],
   "table-cell-value": ["table-cell", "cell-value"],
-  "table-cell-value-edit": ["table-cell", "cell-value"],
   "table-cell-spacer": ["table-cell", "cell-spacer"],
 
-  // Edit mode specific
-  "content-edit": ["content-edit"],
-  "hero-heading-input": ["hero-heading"],
+  // Edit mode — produced by editify stage
+  "editable-text": ["gb-input", "gb-input-text"],
+  "editable-textarea": ["gb-input", "gb-input-textarea"],
+  "editable-number": ["gb-input", "gb-input-number"],
+  "editable-checkbox": ["gb-input", "gb-input-checkbox"],
+  "editable-cell": ["table-cell", "cell-value"],
+  "edit-hidden": ["gb-edit-hidden"],
 };
 
 /**

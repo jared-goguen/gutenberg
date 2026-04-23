@@ -60,10 +60,12 @@ function extractTocEntry(section: Section): { id: string; label: string } | null
  * For docs layout: nav → left sidebar, content → main, auto-TOC → right sidebar.
  * Three-column shell: docs-sidebar | docs-main | docs-sidebar-right
  *
+ * Always produces view-mode output. Edit-mode transformation is handled
+ * by the editify stage downstream.
+ *
  * @param schema The page schema to scaffold
- * @param mode 'view' (default) or 'edit' - determines if components scaffold as inputs or display elements
  */
-export function scaffold(schema: PageSchema, mode: 'view' | 'edit' = 'view'): RenderNode[] {
+export function scaffold(schema: PageSchema): RenderNode[] {
   const { sections } = schema.page;
   const layoutType = schema.page.layout?.type;
 
@@ -75,7 +77,7 @@ export function scaffold(schema: PageSchema, mode: 'view' | 'edit' = 'view'): Re
       narrative: (section.narrative || "rising") as any,
       cohesion: (section.cohesion || "continues") as any,
     };
-    return { node: scaffoldSection(section, axes, mode), type: section.type, section };
+    return { node: scaffoldSection(section, axes), type: section.type, section };
   });
 
   // Docs layout: left sidebar (nav), main (content), right sidebar (TOC)
@@ -135,20 +137,16 @@ export function scaffold(schema: PageSchema, mode: 'view' | 'edit' = 'view'): Re
 }
 
 /**
- * Scaffold a single section based on its type
- * 
- * @param section The section to scaffold
- * @param axes Semantic axes for the section
- * @param mode 'view' (default) or 'edit' - controls how components are rendered
+ * Scaffold a single section based on its type.
+ * Always produces view-mode output — edit mode is handled by editify.
  */
-function scaffoldSection(section: Section, axes: SemanticAxes, mode: 'view' | 'edit' = 'view'): RenderNode {
+function scaffoldSection(section: Section, axes: SemanticAxes): RenderNode {
   let node: RenderNode;
   
   switch (section.type) {
     case "hero": {
       const data = extractHeroData(section as any);
-      // Pass both data and original section so we can check _editable flag
-      node = scaffoldHero(data, mode, section as any);
+      node = scaffoldHero(data);
       break;
     }
     
@@ -160,8 +158,7 @@ function scaffoldSection(section: Section, axes: SemanticAxes, mode: 'view' | 'e
     
     case "content": {
       const data = extractContentData(section as any);
-      // Pass both data and original section so we can check _editable flag
-      node = scaffoldContent(data, mode, section as any);
+      node = scaffoldContent(data);
       break;
     }
     
@@ -172,16 +169,8 @@ function scaffoldSection(section: Section, axes: SemanticAxes, mode: 'view' | 'e
     }
     
     case "navigation": {
-      // Hide navigation in edit mode
-      if (mode === 'edit') {
-        node = createNode("div", {
-          attrs: { style: "display: none;" },
-          children: [],
-        });
-      } else {
-        const data = extractNavigationData(section as any);
-        node = scaffoldNavigation(data);
-      }
+      const data = extractNavigationData(section as any);
+      node = scaffoldNavigation(data);
       break;
     }
     
@@ -195,7 +184,7 @@ function scaffoldSection(section: Section, axes: SemanticAxes, mode: 'view' | 'e
     }
     
     case "table": {
-      node = scaffoldTable(section as any, mode);
+      node = scaffoldTable(section as any);
       break;
     }
     

@@ -6,7 +6,7 @@
  */
 
 // Re-export pipeline functions
-export { lint, scaffold, enrich, style } from '../pipeline/index.js';
+export { lint, scaffold, editify, enrich, style } from '../pipeline/index.js';
 
 // Re-export types
 export type {
@@ -24,7 +24,7 @@ export { isPageSchema, isTemplateSchema } from '../types.js';
 
 // Import types we need for handlers
 import type { PageSchema, TemplateSchema } from '../types.js';
-import { lint, scaffold, enrich, style } from '../pipeline/index.js';
+import { lint, scaffold, editify, enrich, style } from '../pipeline/index.js';
 import YAML from 'yaml';
 
 /**
@@ -130,8 +130,9 @@ async function handleRender(
       );
     }
 
-    const renderNodes = scaffold(schema, mode);
-    const annotatedNodes = enrich(renderNodes);
+    const renderNodes = scaffold(schema);
+    const editNodes = mode === 'edit' ? editify(renderNodes, schema) : renderNodes;
+    const annotatedNodes = enrich(editNodes);
     const html = style(annotatedNodes, schema.page.meta, { mode });
 
     return new Response(html, {
@@ -165,9 +166,16 @@ async function handleSave(
     const templateYAML = await templateObj.text();
     const template = YAML.parse(templateYAML) as PageSchema;
 
-    // Convert form data to YAML
+    // Convert form data to YAML and validate
     const newYAML = formDataToYAML(formData, template, paramValue, config.routeParam);
-    const schema = (YAML.parse(newYAML) as any) as PageSchema;
+    const { schema, result: lintResult } = lint(newYAML);
+
+    if (!lintResult.valid) {
+      return new Response(
+        `Validation error on save: ${JSON.stringify(lintResult.errors, null, 2)}`,
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Call custom save handler if provided
     if (config.onSave) {
@@ -192,8 +200,14 @@ async function handleSave(
 }
 
 /**
- * Convert form data back to YAML structure
- * Preserves template structure and updates values from form submission
+ * Convert form data back to YAML structure.
+ *
+ * Field naming convention (matches editify): `section_{index}__{field}`
+ * This ensures uniqueness even with multiple sections of the same type.
+ *
+ * Checkbox handling: editify emits a hidden input with value="off" before each
+ * checkbox. When unchecked, the hidden input submits "off"; when checked, the
+ * checkbox submits "on" (overriding the hidden input by name order).
  */
 function formDataToYAML(
   formData: FormData,
@@ -218,58 +232,70 @@ function formDataToYAML(
     );
   }
 
-  // Update sections from form data
-  for (const section of spec.page.sections) {
-    if (section.type === 'hero') {
-      // Update from form data if editable
-      if (section._editable) {
-        const heading = formData.get('hero__heading');
-        if (heading) {
+  // Update sections from form data using index-based field names
+  const sections = spec.page.sections;
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+
+    // Always replace {{PARAM}} placeholders regardless of _editable
+    replacePlaceholders(section, paramPlaceholder, paramValue);
+
+    if (!section._editable) continue;
+
+    switch (section.type) {
+      case 'hero': {
+        const heading = formData.get(`section_${i}__heading`);
+        if (heading !== null) {
           section.content.heading = heading.toString();
         }
+        break;
       }
-      // Always replace {{PARAM}} placeholders in hero heading as fallback
-      if (section.content?.heading) {
-        section.content.heading = section.content.heading.replace(
-          new RegExp(paramPlaceholder, 'g'),
-          paramValue
-        );
-      }
-    } else if (section.type === 'table' && section._editable) {
-      for (const cell of section.cells) {
-        const fieldName = `${section.label}__${cell.label}`;
-        const value = formData.get(fieldName);
 
-        if (value !== null) {
-          if (cell.type === 'bool') {
-            cell.value = value === 'on';
-          } else if (cell.type === 'numeric') {
-            cell.value = parseFloat(value as string) || 0;
-          } else {
-            cell.value = value.toString();
-          }
-        }
-      }
-      // Preserve _editable flag so entry remains editable
-    } else if (section.type === 'content') {
-      // Update from form data if editable
-      if (section._editable) {
-        const markdown = formData.get('content__markdown');
-        if (markdown) {
+      case 'content': {
+        const markdown = formData.get(`section_${i}__markdown`);
+        if (markdown !== null) {
           section.markdown = markdown.toString();
         }
+        break;
       }
-      // Always replace {{PARAM}} placeholders in markdown content as fallback
-      if (section.markdown) {
-        section.markdown = section.markdown.replace(
-          new RegExp(paramPlaceholder, 'g'),
-          paramValue
-        );
+
+      case 'table': {
+        for (const cell of section.cells) {
+          const fieldName = `section_${i}__${cell.label}`;
+          const value = formData.get(fieldName);
+
+          if (cell.type === 'bool') {
+            // Hidden input pattern: "on" = checked, "off" = unchecked
+            cell.value = value === 'on';
+          } else if (cell.type === 'numeric') {
+            if (value !== null) {
+              cell.value = parseFloat(value as string) || 0;
+            }
+          } else {
+            if (value !== null) {
+              cell.value = value.toString();
+            }
+          }
+        }
+        break;
       }
     }
   }
 
   return YAML.stringify(spec);
+}
+
+/**
+ * Replace {{PARAM}} placeholders in a section's text fields.
+ */
+function replacePlaceholders(section: any, placeholder: string, value: string): void {
+  const re = new RegExp(placeholder, 'g');
+  if (section.type === 'hero' && section.content?.heading) {
+    section.content.heading = section.content.heading.replace(re, value);
+  }
+  if (section.type === 'content' && section.markdown) {
+    section.markdown = section.markdown.replace(re, value);
+  }
 }
 
 /**
