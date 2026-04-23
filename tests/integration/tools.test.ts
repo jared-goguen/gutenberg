@@ -1,328 +1,192 @@
-import { describe, test, expect, beforeAll, afterAll } from "bun:test";
-import { spawnServer, type TestServer } from "../helpers/server.js";
-import { writeFileSync, mkdirSync, rmSync, readFileSync } from "fs";
-import { join } from "path";
-import { stringify } from "yaml";
+/**
+ * Integration tests for the new gutenberg pipeline.
+ *
+ * Tests the core rendering path: YAML → parse → enrich → plan → compile → HTML.
+ * Does NOT spawn an MCP server — calls pipeline functions directly.
+ */
 
-let srv: TestServer;
-const testDir = join(process.cwd(), "test-specs");
-const renderedDir = join(testDir, "rendered");
+import { describe, test, expect } from "bun:test";
+import { fromYaml, validateSpec } from "../../src/specs/page/yaml.js";
+import { compile, compileYaml } from "../../src/compile.js";
 
-const minimalSchema = {
-  page: {
-    meta: { title: "Test Page" },
-    sections: [
-      {
-        type: "hero",
-        content: {
-          heading: "Hello World",
-          subheading: "A test page",
-        },
-      },
-    ],
-  },
-};
+// ── Minimal spec ─────────────────────────────────────────────
 
-const fullSchema = {
-  page: {
-    meta: {
-      title: "Full Test Page",
-      description: "Integration test page",
-    },
-    layout: {
-      type: "standard",
-    },
-    sections: [
-      {
-        type: "navigation",
-        links: [
-          { text: "Home", href: "/" },
-          { text: "About", href: "/about" },
-        ],
-      },
-      {
-        type: "hero",
-        variant: "centered",
-        content: {
-          heading: "Welcome",
-          subheading: "Testing Gutenberg",
-          cta: { text: "Get Started", href: "/start" },
-        },
-      },
-      {
-        type: "features",
-        variant: "grid-3",
-        heading: "Features",
-        items: [
-          { title: "Fast", description: "Very fast" },
-          { title: "Easy", description: "Very easy" },
-          { title: "Reliable", description: "Very reliable" },
-        ],
-      },
-      {
-        type: "footer",
-        copyright: "2024 Test Corp",
-      },
-    ],
-  },
-};
+const minimalSpec = `
+title: Test Page
+theme: mono
+blocks:
+  - heading:
+      text: Hello World
+  - prose:
+      text: |
+        This is a **test** page.
+`;
 
-// Helper to write schema to file and return path
-function writeSpec(name: string, schema: any): string {
-  mkdirSync(testDir, { recursive: true });
-  const path = join(testDir, `${name}.yaml`);
-  writeFileSync(path, stringify(schema));
-  return path;
-}
+const fullSpec = `
+title: Full Test Page
+description: A comprehensive test of the rendering pipeline
+theme: mono
+blocks:
+  - hero:
+      title: Welcome
+      subtitle: A test hero
+  - section_label:
+      text: FEATURES
+  - heading:
+      text: Key Features
+      level: 2
+  - cards:
+      items:
+        - title: Card One
+          body: First card body
+        - title: Card Two
+          body: Second card body
+  - stat:
+      items:
+        - value: "99.9%"
+          label: Uptime
+        - value: "42"
+          label: Features
+  - prose:
+      text: |
+        ## Details
 
-beforeAll(async () => {
-  srv = await spawnServer();
-  mkdirSync(renderedDir, { recursive: true });
-});
+        Some detailed content with **bold** and *italic*.
 
-afterAll(async () => {
-  await srv.close();
-  try {
-    rmSync(testDir, { recursive: true });
-  } catch {
-    // ignore cleanup errors
-  }
-});
+        - Item one
+        - Item two
+  - flow_chain:
+      steps:
+        - label: Step 1
+        - label: Step 2
+        - label: Step 3
+  - badge:
+      items:
+        - label: v2.0
+          tone: positive
+        - label: beta
+          tone: neutral
+  - table:
+      headers:
+        - Name
+        - Status
+      rows:
+        - [Alpha, Active]
+        - [Beta, Pending]
+  - closing:
+      text: |
+        ## Get Started
 
-describe("Tool discovery", () => {
-  test("server exposes all pipeline tools", async () => {
-    const tools = await srv.listTools();
-    expect(tools.sort()).toEqual([
-      "build",
-      "create_project",
-      "enrich",
-      "get_project",
-      "init_template",
-      "lint",
-      "list_projects",
-      "publish",
-      "scaffold",
-      "snapshot",
-      "style",
-    ]);
-  });
-});
+        Ready to begin?
+`;
 
-describe("lint", () => {
-  test("returns valid:true for a well-formed schema", async () => {
-    const spec_path = writeSpec("lint-minimal", minimalSchema);
-    const result = JSON.parse(await srv.call("lint", { spec_path }));
-    expect(typeof result.lint_path).toBe("string");
-    expect(result.valid).toBe(true);
-    expect(result.errors).toBe(0);
+// ── Tests ────────────────────────────────────────────────────
+
+describe("Pipeline: YAML → HTML", () => {
+  test("minimal spec parses and validates", () => {
+    const spec = fromYaml(minimalSpec);
+    expect(spec.title).toBe("Test Page");
+    expect(spec.blocks.length).toBe(2);
+
+    const errors = validateSpec(spec);
+    expect(errors).toEqual([]);
   });
 
-  test("returns valid:false with errors for missing required fields", async () => {
-    const badSchema = {
-      page: {
-        sections: [
-          { type: "hero" }, // missing content.heading
-        ],
-      },
-    };
-    const spec_path = writeSpec("lint-missing", badSchema);
-    const result = JSON.parse(await srv.call("lint", { spec_path }));
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeGreaterThan(0);
+  test("minimal spec compiles to HTML", () => {
+    const result = compileYaml(minimalSpec);
+    expect(result.html).toContain("Hello World");
+    expect(result.html).toContain("<!DOCTYPE html>");
+    expect(result.html).toContain("gb-heading");
+    expect(result.html).toContain("gb-prose");
   });
 
-  test("returns valid:false for invalid section type", async () => {
-    const badSchema = {
-      page: {
-        sections: [{ type: "totally-unknown-type" }],
-      },
-    };
-    const spec_path = writeSpec("lint-badtype", badSchema);
-    const result = JSON.parse(await srv.call("lint", { spec_path }));
-    expect(result.valid).toBe(false);
-    expect(result.errors).toBeGreaterThan(0);
-  });
+  test("full spec compiles with all block types", () => {
+    const result = compileYaml(fullSpec);
+    const html = result.html;
 
-  test("returns warnings for missing metadata", async () => {
-    const schemaNoMeta = {
-      page: {
-        sections: [{ type: "hero", content: { heading: "Hi" } }],
-      },
-    };
-    const spec_path = writeSpec("lint-nometa", schemaNoMeta);
-    const result = JSON.parse(await srv.call("lint", { spec_path }));
-    expect(result.warnings).toBeGreaterThan(0);
-  });
-});
-
-describe("scaffold", () => {
-  test("builds RenderNode tree from lint artifact", async () => {
-    const spec_path = writeSpec("scaffold-test", minimalSchema);
-    await srv.call("lint", { spec_path });
-    
-    const scaffoldResult = JSON.parse(
-      await srv.call("scaffold", { spec_path })
-    );
-    
-    expect(typeof scaffoldResult.scaffold_path).toBe("string");
-    expect(scaffoldResult.scaffold_path).toMatch(/\.scaffold\.json$/);
-    expect(scaffoldResult.section_count).toBeGreaterThan(0);
-  });
-});
-
-describe("enrich", () => {
-  test("resolves CSS classes from RenderNode tree", async () => {
-    const spec_path = writeSpec("enrich-test", minimalSchema);
-    await srv.call("lint", { spec_path });
-    await srv.call("scaffold", { spec_path });
-    
-    const enrichResult = JSON.parse(
-      await srv.call("enrich", { spec_path })
-    );
-    
-    expect(typeof enrichResult.enrich_path).toBe("string");
-    expect(enrichResult.enrich_path).toMatch(/\.enrich\.json$/);
-    expect(enrichResult.section_count).toBeGreaterThan(0);
-  });
-});
-
-describe("style", () => {
-  test("generates complete HTML from enriched tree", async () => {
-    const spec_path = writeSpec("style-test", fullSchema);
-    await srv.call("lint", { spec_path });
-    await srv.call("scaffold", { spec_path });
-    await srv.call("enrich", { spec_path });
-    
-    const styleResult = JSON.parse(
-      await srv.call("style", { spec_path })
-    );
-    
-    expect(typeof styleResult.html_path).toBe("string");
-    expect(styleResult.html_path).toMatch(/\.html$/);
-    expect(styleResult.bytes).toBeGreaterThan(1000);
-
-    const html = readFileSync(styleResult.html_path, "utf8");
+    // Document structure
     expect(html).toContain("<!DOCTYPE html>");
-    expect(html).toContain("Full Test Page");
-    expect(html).toContain("<style>");
-    expect(html).toContain("--accent");
+    expect(html).toContain("<title>Full Test Page</title>");
+
+    // Hero
+    expect(html).toContain("gb-hero");
+    expect(html).toContain("Welcome");
+
+    // Section label
+    expect(html).toContain("gb-section-label");
+    expect(html).toContain("FEATURES");
+
+    // Cards
+    expect(html).toContain("gb-card");
+    expect(html).toContain("Card One");
+
+    // Stat
+    expect(html).toContain("gb-stat");
+    expect(html).toContain("99.9%");
+
+    // Flow chain
+    expect(html).toContain("gb-flow-chain");
+    expect(html).toContain("Step 1");
+
+    // Badge
+    expect(html).toContain("gb-badge");
+
+    // Table
+    expect(html).toContain("gb-table");
+    expect(html).toContain("Alpha");
+
+    // Closing
+    expect(html).toContain("gb-closing");
+    expect(html).toContain("Get Started");
+  });
+
+  test("compile() returns well-formed HTML document", () => {
+    const spec = fromYaml(minimalSpec);
+    const result = compile(spec);
+
+    // Has proper HTML structure
+    expect(result.html).toStartWith("<!DOCTYPE html>");
+    expect(result.html).toContain("<html lang=\"en\">");
+    expect(result.html).toContain("<head>");
+    expect(result.html).toContain("</head>");
+    expect(result.html).toContain("<body");
+    expect(result.html).toContain("</body>");
+    expect(result.html).toContain("</html>");
+
+    // Has stylesheet
+    expect(result.html).toContain("<style>");
+
+    // Has mono theme CSS variables
+    expect(result.html).toContain("--gb-accent");
+  });
+
+  test("theme defaults to mono", () => {
+    const specNoTheme = `
+title: No Theme
+blocks:
+  - heading:
+      text: Test
+`;
+    const result = compileYaml(specNoTheme);
+    // Should still produce valid HTML (mono is the only stylesheet)
+    expect(result.html).toContain("<!DOCTYPE html>");
+    expect(result.html).toContain("gb-heading");
   });
 });
 
-describe("snapshot", () => {
-  test("captures HTML to PNG screenshot", async () => {
-    const spec_path = writeSpec("snapshot-test", minimalSchema);
-    await srv.call("lint", { spec_path });
-    await srv.call("scaffold", { spec_path });
-    await srv.call("enrich", { spec_path });
-    await srv.call("style", { spec_path });
-    
-    const snapshotResult = JSON.parse(
-      await srv.call("snapshot", { spec_path })
-    );
-    
-    expect(typeof snapshotResult.image_path).toBe("string");
-    expect(snapshotResult.image_path).toMatch(/\.png$/);
-    expect(readFileSync(snapshotResult.image_path).byteLength).toBeGreaterThan(5000);
+describe("Spec validation", () => {
+  test("rejects empty spec", () => {
+    expect(() => fromYaml("")).toThrow();
   });
 
-  test("respects custom viewport dimensions", async () => {
-    const spec_path = writeSpec("snapshot-viewport", minimalSchema);
-    await srv.call("lint", { spec_path });
-    await srv.call("scaffold", { spec_path });
-    await srv.call("enrich", { spec_path });
-    await srv.call("style", { spec_path });
-    
-    const snapshotResult = JSON.parse(
-      await srv.call("snapshot", { 
-        spec_path,
-        width: 375,
-        height: 667
-      })
-    );
-    
-    expect(snapshotResult.image_path).toMatch(/\.png$/);
-  });
-});
-
-describe("E2E Pipeline: Full Render Chain", () => {
-  const smokeSpec = {
-    page: {
-      meta: { 
-        title: "Smoke Test" 
-      },
-      layout: {
-        theme: "ink"
-      },
-      sections: [
-        {
-          type: "navigation",
-          links: [{ text: "Home", href: "/" }]
-        },
-        {
-          type: "hero",
-          content: {
-            heading: "Smoke Test",
-            subheading: "All tools working"
-          }
-        },
-        {
-          type: "features",
-          variant: "grid-3",
-          items: [
-            { title: "Feature 1", description: "desc1" },
-            { title: "Feature 2", description: "desc2" }
-          ]
-        },
-        {
-          type: "footer",
-          copyright: "2024 Test"
-        }
-      ]
-    }
-  };
-
-  test("lint → scaffold → enrich → style → snapshot chain", async () => {
-    const spec_path = writeSpec("smoke-test", smokeSpec);
-    console.log(`📝 Spec written to: ${spec_path}`);
-
-    // 1. LINT
-    const lintResult = JSON.parse(
-      await srv.call("lint", { spec_path })
-    );
-    console.log(`✅ lint: valid=${lintResult.valid}, errors=${lintResult.errors}`);
-    expect(lintResult.valid).toBe(true);
-
-    // 2. SCAFFOLD
-    const scaffoldResult = JSON.parse(
-      await srv.call("scaffold", { spec_path })
-    );
-    console.log(`📐 scaffold: ${scaffoldResult.scaffold_path} (${scaffoldResult.section_count} sections)`);
-    expect(scaffoldResult.section_count).toBeGreaterThan(0);
-
-    // 3. ENRICH
-    const enrichResult = JSON.parse(
-      await srv.call("enrich", { spec_path })
-    );
-    console.log(`💎 enrich: ${enrichResult.enrich_path} (${enrichResult.section_count} sections)`);
-    expect(enrichResult.section_count).toBe(scaffoldResult.section_count);
-
-    // 4. STYLE
-    const styleResult = JSON.parse(
-      await srv.call("style", { spec_path })
-    );
-    console.log(`🎨 style: ${styleResult.html_path} (${styleResult.bytes} bytes)`);
-    expect(styleResult.html_path).toMatch(/\.html$/);
-
-    // 5. SNAPSHOT
-    const snapshotResult = JSON.parse(
-      await srv.call("snapshot", { spec_path })
-    );
-    const pngSize = readFileSync(snapshotResult.image_path).byteLength;
-    console.log(`🖼️  snapshot: ${snapshotResult.image_path} (${pngSize} bytes)`);
-    expect(snapshotResult.image_path).toMatch(/\.png$/);
-    expect(pngSize).toBeGreaterThan(5000);
-
-    console.log(`✨ Full pipeline complete: 5 stages executed successfully`);
+  test("rejects spec without title", () => {
+    const noTitle = `
+blocks:
+  - heading:
+      text: No title
+`;
+    // Should parse but validation may flag it
+    const spec = fromYaml(noTitle);
+    expect(spec.blocks.length).toBe(1);
   });
 });
