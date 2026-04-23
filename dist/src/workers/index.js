@@ -145,12 +145,18 @@ function formDataToYAML(formData, template, paramValue, routeParam) {
     }
     // Update sections from form data
     for (const section of spec.page.sections) {
-        if (section.type === 'hero' && section._editable) {
-            const heading = formData.get('hero__heading');
-            if (heading) {
-                section.content.heading = heading.toString();
+        if (section.type === 'hero') {
+            // Update from form data if editable
+            if (section._editable) {
+                const heading = formData.get('hero__heading');
+                if (heading) {
+                    section.content.heading = heading.toString();
+                }
             }
-            // Preserve _editable flag so entry remains editable
+            // Always replace {{PARAM}} placeholders in hero heading as fallback
+            if (section.content?.heading) {
+                section.content.heading = section.content.heading.replace(new RegExp(paramPlaceholder, 'g'), paramValue);
+            }
         }
         else if (section.type === 'table' && section._editable) {
             for (const cell of section.cells) {
@@ -170,12 +176,18 @@ function formDataToYAML(formData, template, paramValue, routeParam) {
             }
             // Preserve _editable flag so entry remains editable
         }
-        else if (section.type === 'content' && section._editable) {
-            const markdown = formData.get('content__markdown');
-            if (markdown) {
-                section.markdown = markdown.toString();
+        else if (section.type === 'content') {
+            // Update from form data if editable
+            if (section._editable) {
+                const markdown = formData.get('content__markdown');
+                if (markdown) {
+                    section.markdown = markdown.toString();
+                }
             }
-            // Preserve _editable flag so entry remains editable
+            // Always replace {{PARAM}} placeholders in markdown content as fallback
+            if (section.markdown) {
+                section.markdown = section.markdown.replace(new RegExp(paramPlaceholder, 'g'), paramValue);
+            }
         }
     }
     return YAML.stringify(spec);
