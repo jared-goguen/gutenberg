@@ -346,7 +346,106 @@ export interface DocumentOptions {
   hashSync?: boolean;
   /** External font stylesheet URL (e.g. Google Fonts). Injected as <link> in head. */
   fontUrl?: string;
+  /** Enable edit mode — wraps body in <form>, adds submit button, injects edit CSS. */
+  editMode?: boolean;
 }
+
+/**
+ * Edit-mode CSS. Injected when editMode is true.
+ *
+ * Design: inputs inherit ALL visual styling from their parent block class
+ * (font, size, color, weight). A subtle dashed border signals editability.
+ * Focus state uses the accent color. The submit button floats fixed.
+ */
+const EDIT_CSS = `
+/* ── Edit mode ────────────────────────────────────────────── */
+body[data-edit-mode] .gb-edit-field {
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 2px;
+  color: inherit;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  line-height: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.25em 0.4em;
+  margin: 0;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: none;
+}
+body[data-edit-mode] .gb-edit-field::placeholder {
+  color: color-mix(in srgb, currentColor 30%, transparent);
+}
+body[data-edit-mode] .gb-edit-field:hover {
+  border-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+body[data-edit-mode] .gb-edit-field:focus {
+  border-color: var(--gb-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gb-accent) 20%, transparent);
+}
+body[data-edit-mode] .gb-edit-textarea {
+  min-height: 12em;
+  resize: vertical;
+  font-family: var(--gb-font-mono, 'SF Mono', 'Fira Code', monospace);
+  font-size: 0.875em;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+body[data-edit-mode] .gb-edit-cell {
+  width: 100%;
+  text-align: inherit;
+  padding: 0.4em 0.6em;
+}
+/* Hero title input matches the display h1 */
+body[data-edit-mode] input.gb-hero-title {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+/* Submit button — floating, persistent */
+body[data-edit-mode] .gb-edit-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 2rem;
+  background: color-mix(in srgb, var(--gb-surface, #0a0a0a) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  z-index: 100;
+}
+body[data-edit-mode] .gb-edit-bar .gb-edit-status {
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+  margin-right: auto;
+}
+body[data-edit-mode] .gb-edit-submit {
+  padding: 0.5rem 1.75rem;
+  background: var(--gb-accent);
+  color: var(--gb-surface, #0a0a0a);
+  border: none;
+  border-radius: 4px;
+  font: 600 0.875rem/1.4 var(--gb-font-body, system-ui);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+body[data-edit-mode] .gb-edit-submit:hover {
+  opacity: 0.9;
+}
+/* Give body bottom padding to avoid content hidden behind the edit bar */
+body[data-edit-mode] {
+  padding-bottom: 4rem;
+}
+`;
 
 export function wrapDocument(opts: DocumentOptions): string {
   const ogTags: string[] = [];
@@ -412,6 +511,14 @@ export function wrapDocument(opts: DocumentOptions): string {
     ? `<div class="gb-progress-bar" aria-hidden="true"></div>`
     : "";
 
+  // Edit mode: add data attribute, form wrapper, edit bar, and edit CSS
+  const editAttr = opts.editMode ? ' data-edit-mode' : '';
+  const editCss = opts.editMode ? EDIT_CSS : '';
+  const editFormOpen = opts.editMode ? '<form method="POST" class="gb-edit-form">' : '';
+  const editFormClose = opts.editMode
+    ? `<div class="gb-edit-bar"><span class="gb-edit-status">Editing</span><button type="submit" class="gb-edit-submit">Save</button></div></form>`
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -425,11 +532,14 @@ ${opts.fontUrl ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n<
 ${jsonLd}
 <style>
 ${opts.stylesheet}
+${editCss}
 </style>
 </head>
-<body data-density="${opts.density}" data-separation="${opts.separation}" data-emphasis="${opts.emphasis}" data-shadow="${opts.shadow}"${layoutAttr}${textureAttr}${(opts.hashSync ?? true) ? ' data-hash-sync' : ''}>
+<body data-density="${opts.density}" data-separation="${opts.separation}" data-emphasis="${opts.emphasis}" data-shadow="${opts.shadow}"${layoutAttr}${textureAttr}${(opts.hashSync ?? true) ? ' data-hash-sync' : ''}${editAttr}>
 ${progressBar}
+${editFormOpen}
 ${bodyContent}
+${editFormClose}
 ${ENTRANCE_SCRIPT}
 ${showcaseScripts.join("\n")}
 </body>

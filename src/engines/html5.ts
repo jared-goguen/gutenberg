@@ -46,6 +46,13 @@ export interface CompileOptions {
   /** Root directory for resolving relative bundle paths.
    *  Derived from projectDir by the build pipeline. Falls back to CWD. */
   resolveRoot?: string;
+
+  // ── Edit mode ───────────────────────────────────────────
+  /** Enable edit mode — editable blocks render as form inputs. */
+  editMode?: boolean;
+  /** Set of spec.blocks[] indices that are editable.
+   *  Only blocks in this set render form inputs; others render normally. */
+  editableBlocks?: Set<number>;
 }
 
 export type { SiteChrome } from "../site-enrich.js";
@@ -94,11 +101,16 @@ export function renderHtml5(p: CompilePlan, options?: CompileOptions): CompileRe
   };
 
   // ── Render content blocks ─────────────────────────────────
+  const editMode = options?.editMode ?? false;
+  const editableBlocks = options?.editableBlocks;
+
   const fragments = contentBlocks.map((block, i) => {
+    const specIdx = p.specIndices[i];
+    const isEditable = editMode && editableBlocks?.has(specIdx);
     try {
       return renderBlock(
         block,
-        { ...ctx, blockIndex: i },
+        { ...ctx, blockIndex: i, editMode: isEditable, specIndex: specIdx },
         contentBlocks,
         showcase,
         enrichments.get(i),
@@ -127,7 +139,11 @@ export function renderHtml5(p: CompilePlan, options?: CompileOptions): CompileRe
   }
 
   if (p.hero) {
-    frameParts.push(renderBlock(p.hero, ctx));
+    const heroEditable = editMode && editableBlocks?.has(p.heroSpecIndex!);
+    const heroCtx = heroEditable
+      ? { ...ctx, editMode: true, specIndex: p.heroSpecIndex }
+      : ctx;
+    frameParts.push(renderBlock(p.hero, heroCtx));
     frameParts.push(`<div style="margin-bottom: ${FRAME_GAP[separation]}rem"></div>`);
   }
 
@@ -215,6 +231,7 @@ export function renderHtml5(p: CompilePlan, options?: CompileOptions): CompileRe
     progressBar: true,
     hashSync: true,
     fontUrl: t.fontUrl,
+    editMode,
   });
 
   return { html };

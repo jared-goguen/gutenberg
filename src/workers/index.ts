@@ -26,6 +26,7 @@ import { fromYaml, validateSpec } from '../specs/page/yaml.js';
 import { sanitizeSpec } from '../specs/page/sanitize.js';
 import { compile } from '../compile.js';
 import { wrapDocument } from '../document.js';
+import { compileEdit, findEditableBlocks } from '../pipeline/editify.js';
 import YAML from 'yaml';
 
 /**
@@ -80,12 +81,7 @@ export function createEditHandler(config: EditHandlerConfig) {
 
     // GET = render (view or edit)
     if (mode === 'edit') {
-      // TODO: Edit mode not yet ported to new pipeline.
-      // See src/pipeline/editify.ts for details.
-      return new Response(
-        'Edit mode is not yet available — the edit transform needs to be ported to the new pipeline.',
-        { status: 501, headers: { 'Content-Type': 'text/plain' } }
-      );
+      return handleEditRender(config, paramValue);
     }
 
     return handleRender(config, paramValue);
@@ -146,6 +142,47 @@ async function handleRender(
     });
 
     return new Response(html, {
+      headers: { 'Content-Type': 'text/html' },
+    });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    return getErrorResponse(errorMsg);
+  }
+}
+
+/**
+ * Handle GET ?mode=edit — render entry with editable form inputs.
+ *
+ * Runs the full pipeline (enrichment, tonal colors, etc.) but editable
+ * blocks render as form inputs instead of display elements.
+ */
+async function handleEditRender(
+  config: EditHandlerConfig,
+  paramValue: string,
+): Promise<Response> {
+  try {
+    const bucket = config.bucket;
+
+    // Load template to determine editable blocks
+    const templateObj = await bucket.get(config.templateKey);
+    if (!templateObj) {
+      return getErrorResponse('Template not found');
+    }
+    const templateYaml = await templateObj.text();
+    const templateRaw = YAML.parse(templateYaml) as Record<string, unknown>;
+    const editableBlocks = findEditableBlocks(templateRaw);
+
+    // Load existing entry or use template as starting point
+    const entryKey = `entries/${paramValue}.yaml`;
+    const existing = await bucket.get(entryKey);
+    const yamlContent = existing ? await existing.text() : templateYaml;
+
+    // Parse and compile in edit mode
+    const spec = fromYaml(yamlContent);
+    sanitizeSpec(spec);
+    const result = compileEdit(spec, editableBlocks);
+
+    return new Response(result.html, {
       headers: { 'Content-Type': 'text/html' },
     });
   } catch (error) {
@@ -253,17 +290,25 @@ function formDataToYAML(
 
     switch (blockType) {
       case 'hero': {
-        const heading = formData.get(`section_${i}__heading`);
-        if (heading !== null && block.hero) {
-          block.hero.title = heading.toString();
+        const title = formData.get(`section_${i}__title`);
+        if (title !== null && block.hero) {
+          block.hero.title = title.toString();
+        }
+        const subtitle = formData.get(`section_${i}__subtitle`);
+        if (subtitle !== null && block.hero) {
+          block.hero.subtitle = subtitle.toString();
+        }
+        const body = formData.get(`section_${i}__body`);
+        if (body !== null && block.hero) {
+          block.hero.body = body.toString();
         }
         break;
       }
 
       case 'prose': {
-        const markdown = formData.get(`section_${i}__markdown`);
-        if (markdown !== null && block.prose) {
-          block.prose.body = markdown.toString();
+        const text = formData.get(`section_${i}__text`);
+        if (text !== null && block.prose) {
+          block.prose.text = text.toString();
         }
         break;
       }

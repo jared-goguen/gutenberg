@@ -12,19 +12,33 @@ import { renderMarkdown } from "../markdown.js";
 export function renderHero(spec: HeroSpec, ctx: RenderContext): string {
   const accent = ctx.themeTokens.accent;
   const parts: string[] = [];
+  const si = ctx.specIndex ?? 0;
 
   if (spec.categories?.length) {
     parts.push(renderEyebrow(spec.categories));
   }
 
-  parts.push(`  <h1 class="gb-hero-title">${esc(spec.title)}</h1>`);
+  // Edit mode: title becomes a text input styled identically to the display title
+  if (ctx.editMode) {
+    parts.push(`  <input class="gb-hero-title gb-edit-field" type="text" name="section_${si}__title" value="${esc(spec.title)}" placeholder="Page title…">`);
+  } else {
+    parts.push(`  <h1 class="gb-hero-title">${esc(spec.title)}</h1>`);
+  }
 
   if (spec.subtitle) {
-    parts.push(`  <p class="gb-hero-subtitle">${renderInline(spec.subtitle)}</p>`);
+    if (ctx.editMode) {
+      parts.push(`  <input class="gb-hero-subtitle gb-edit-field" type="text" name="section_${si}__subtitle" value="${esc(spec.subtitle)}" placeholder="Subtitle…">`);
+    } else {
+      parts.push(`  <p class="gb-hero-subtitle">${renderInline(spec.subtitle)}</p>`);
+    }
   }
 
   if (spec.body) {
-    parts.push(`  <div class="gb-hero-body">${renderMarkdown(spec.body)}</div>`);
+    if (ctx.editMode) {
+      parts.push(`  <textarea class="gb-hero-body gb-edit-field" name="section_${si}__body" rows="4" placeholder="Body…">${esc(spec.body)}</textarea>`);
+    } else {
+      parts.push(`  <div class="gb-hero-body">${renderMarkdown(spec.body)}</div>`);
+    }
   }
 
   parts.push(`  <div class="gb-hero-accent" style="--gb-hero-accent-bg: ${accent}"></div>`);

@@ -43,6 +43,15 @@ export interface CompilePlan {
    *  Frame blocks (hero, superhero, closing) are excluded. */
   contentBlocks: SpecBlock[];
 
+  /** Mapping from contentBlocks index → original spec.blocks index.
+   *  Needed by edit mode to generate correct form field names. */
+  specIndices: number[];
+
+  /** Original spec.blocks index of the hero frame, if extracted. */
+  heroSpecIndex?: number;
+  /** Original spec.blocks index of the closing frame, if extracted. */
+  closingSpecIndex?: number;
+
   /** Per-block enrichment tokens. Keyed by index into contentBlocks. */
   enrichments: Map<number, BlockEnrichment>;
 

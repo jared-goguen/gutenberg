@@ -9,7 +9,7 @@
  */
 
 import type { PageSpec, SpecBlock, HeroSpec, SuperheroSpec } from "./specs/page/index.js";
-import { blockValue } from "./specs/page/index.js";
+import { blockType, blockValue, normalizeBlock } from "./specs/page/index.js";
 import type { Separation } from "./specs/page/semantics.js";
 import {
   COHESION_TOKENS,
@@ -68,6 +68,25 @@ export function plan(
   const superhero = resolveSuperhero(spec);
   const closing = spec.closing ? ({ closing: spec.closing } as SpecBlock) : undefined;
 
+  // Compute spec.blocks → contentBlocks index mapping for edit mode.
+  // Frame blocks are extracted by enrich(); we need to know which
+  // spec.blocks index each content block came from.
+  const specIndices: number[] = [];
+  let heroSpecIndex: number | undefined;
+  let closingSpecIndex: number | undefined;
+  {
+    const normalizedBlocks = spec.blocks.map(normalizeBlock);
+    let contentIdx = 0;
+    for (let si = 0; si < normalizedBlocks.length; si++) {
+      const type = blockType(normalizedBlocks[si]);
+      if (type === "hero" && spec.hero) { heroSpecIndex = si; continue; }
+      if (type === "superhero" && spec.superhero) { continue; }
+      if (type === "closing" && spec.closing) { closingSpecIndex = si; continue; }
+      specIndices.push(si);
+      contentIdx++;
+    }
+  }
+
   // Resolve metadata
   const title = spec.title ?? superhero?.title ?? hero?.title ?? "Untitled";
   const heroBody = spec.superhero?.body ?? spec.hero?.body;
@@ -86,6 +105,9 @@ export function plan(
     align: enriched.align,
     theme: enriched.theme,
     contentBlocks: enriched.contentBlocks,
+    specIndices,
+    heroSpecIndex,
+    closingSpecIndex,
     enrichments: enriched.blockEnrichments,
     gaps,
     showcase: enriched.showcase,

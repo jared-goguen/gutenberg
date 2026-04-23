@@ -35,6 +35,12 @@ export interface RenderContext {
   /** Root directory for resolving relative bundle paths (sandbox/app_shell src).
    *  Falls back to process.cwd() when absent (standalone compilation). */
   resolveRoot?: string;
+
+  // ── Edit mode ───────────────────────────────────────────
+  /** When true, this block should render form inputs instead of display HTML. */
+  editMode?: boolean;
+  /** Original index in spec.blocks[] — used for form field name generation. */
+  specIndex?: number;
 }
 
 /** Entry returned by RecentResolver — a page in the project with metadata. */
