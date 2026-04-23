@@ -1,122 +1,57 @@
-import { promises as fs } from "fs";
-import { dirname, basename, join } from "path";
-import {
-  parseProjectConfig,
-  discoverPages,
-  discoverTemplates,
-  buildNavStructure,
-  getRenderedDir,
-  getArtifactPath,
-  getTemplateMetadata,
-} from "../../src/project.js";
-import { lint, scaffold, enrich, style } from "../../src/pipeline/index.js";
-import type { PageSchema } from "../../src/types.js";
-import type { AnnotatedNode } from "../../src/scaffold/node.js";
+/**
+ * Build tool — compiles YAML specs to .site/ using the ported rendering engine.
+ *
+ * Pipeline: readProjectConfig → discoverSpecs → plan → render (html5) → write .site/
+ *
+ * Keeps handler(input) export for convention-based tool discovery.
+ */
+
+import { build } from "../../src/build.js";
+import { readProjectConfig } from "../../src/project-config.js";
 
 export async function handler(input: Record<string, unknown>) {
-  const project_path = input.project_path as string;
+  const project_dir = (input.project_dir ?? input.project_path) as string | undefined;
 
-  if (!project_path) {
-    throw new Error("'project_path' is required - provide an absolute path to gutenberg.yaml");
+  if (!project_dir) {
+    throw new Error("'project_dir' is required — provide an absolute path to a project directory containing YAML specs.");
   }
 
-  const config = await parseProjectConfig(project_path);
-  const projectRoot = dirname(project_path);
-  const renderedDir = await getRenderedDir(project_path);
-  const pages = await discoverPages(project_path);
-  const templates = await discoverTemplates(projectRoot);
+  // Read project config to determine target (if available)
+  const config = await readProjectConfig(project_dir);
 
-  if (pages.length === 0 && templates.length === 0) {
-    throw new Error(`No pages or templates found in project at ${projectRoot}`);
-  }
+  const result = await build({
+    projectDir: project_dir,
+    siteDir: input.site_dir as string | undefined,
+    force: input.force as boolean | undefined,
+    section: input.section as string | undefined,
+    specKey: input.spec_key as string | undefined,
+    target: config?.targets?.[0],
+  });
 
-  await fs.mkdir(renderedDir, { recursive: true });
+  const buildFailed = result.errors.length > 0 && result.compiled === 0;
 
-  // DISCOVERY: Validate templates (but don't render them)
-  if (templates.length > 0) {
-    console.error(`[build] Found ${templates.length} template(s), validating...`);
-    const templateMetadata = await getTemplateMetadata(projectRoot);
-    console.error(`[build] ${templateMetadata.length} template(s) valid`);
-    
-    // Store metadata in .gutenberg-edit/ for later use
-    const editDir = join(projectRoot, ".gutenberg-edit");
-    await fs.mkdir(editDir, { recursive: true });
-    await fs.writeFile(
-      join(editDir, "templates.json"),
-      JSON.stringify(templateMetadata, null, 2),
-      "utf8"
-    );
-  }
-
-  // FIRST PASS: lint all pages to gather titles for nav
-  console.error(`[build] Linting ${pages.length} pages...`);
-  for (const spec_path of pages) {
-    const lint_path = await getArtifactPath(spec_path, "lint");
-    await fs.mkdir(dirname(lint_path), { recursive: true });
-
-    const yamlContent = await fs.readFile(spec_path, "utf8");
-    const lintOutput = lint(yamlContent);
-
-    await fs.writeFile(
-      lint_path,
-      JSON.stringify({ schema: lintOutput.schema, result: lintOutput.result }, null, 2),
-      "utf8"
-    );
-  }
-
-  // Build navigation from all page titles
-  console.error(`[build] Building navigation structure...`);
-  const nav = await buildNavStructure(pages, projectRoot);
-
-  // SECOND PASS: scaffold → enrich → style each page
-  console.error(`[build] Rendering ${pages.length} pages...`);
-  const results: Array<{ spec_path: string; html_path: string; title: string }> = [];
-
-  for (const spec_path of pages) {
-    const lint_path = await getArtifactPath(spec_path, "lint");
-    const scaffold_path = await getArtifactPath(spec_path, "scaffold");
-    const enrich_path = await getArtifactPath(spec_path, "enrich");
-    const html_path = await getArtifactPath(spec_path, "html");
-
-    const lintData = JSON.parse(await fs.readFile(lint_path, "utf8"));
-    let schema = lintData.schema as PageSchema;
-
-    // Inject cross-page navigation (only when multi-page)
-    if (!schema.page.sections) schema.page.sections = [];
-    const navSectionIndex = schema.page.sections.findIndex(s => s.type === "navigation");
-    const currentHref = nav.find(link => {
-      const specName = basename(spec_path, ".yaml");
-      return link.href === `/${specName}` || link.href === "/" || link.href.endsWith(`/${specName}`);
-    })?.href;
-    const filteredNav = nav.filter(link => link.href !== currentHref);
-
-    if (navSectionIndex >= 0 && filteredNav.length > 0) {
-      schema.page.sections[navSectionIndex].links = filteredNav.map(l => ({ text: l.text, href: l.href }));
-    } else if (navSectionIndex < 0 && filteredNav.length > 0) {
-      schema.page.sections.unshift({ type: "navigation" as const, links: filteredNav.map(l => ({ text: l.text, href: l.href })) });
-    }
-
-    // SCAFFOLD
-    const renderNodes = scaffold(schema);
-    await fs.writeFile(scaffold_path, JSON.stringify({ spec_name: basename(spec_path, ".yaml"), nodes: renderNodes }, null, 2), "utf8");
-
-    // ENRICH
-    const annotatedNodes = enrich(renderNodes);
-    await fs.writeFile(enrich_path, JSON.stringify({ spec_name: basename(spec_path, ".yaml"), nodes: annotatedNodes }, null, 2), "utf8");
-
-    // STYLE
-    const html = style(annotatedNodes as AnnotatedNode[], schema.page.meta, { minify: false, indentSize: 2 });
-    await fs.writeFile(html_path, html, "utf8");
-
-    results.push({ spec_path, html_path, title: schema.page.meta?.title || basename(spec_path, ".yaml") });
-  }
-
-  console.error(`[build] Build complete: ${results.length} pages rendered`);
+  console.error(
+    `[build] ${buildFailed ? "FAILED" : "Complete"}: ${result.compiled} compiled, ${result.skipped} skipped, ${result.reconciled} reconciled${result.errors.length > 0 ? `, ${result.errors.length} error(s)` : ""}`,
+  );
 
   return {
-    content: [{
-      type: "text" as const,
-      text: JSON.stringify({ project_name: config.project.name, rendered_dir: renderedDir, pages: results }),
-    }],
+    content: [
+      {
+        type: "text" as const,
+        text: JSON.stringify(
+          {
+            total: result.total,
+            compiled: result.compiled,
+            skipped: result.skipped,
+            reconciled: result.reconciled,
+            errors: result.errors.length > 0 ? result.errors : undefined,
+            site_dir: result.siteDir,
+          },
+          null,
+          2,
+        ),
+      },
+    ],
+    isError: buildFailed,
   };
 }

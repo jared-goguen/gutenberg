@@ -17,6 +17,7 @@ import { esc } from "../blocks/types.js";
 import type { SiteNav } from "../site-nav.js";
 import type { NavPageRef, BreadcrumbEntry } from "../site-nav.js";
 import type { CompilePlan, RenderResult, RenderEngine } from "../backend.js";
+import type { SiteChrome } from "../site-enrich.js";
 
 // ── Public types ──────────────────────────────────────────────
 
@@ -37,6 +38,8 @@ export interface CompileOptions {
   nextPage?: NavPageRef;
   /** Breadcrumb trail from root to current page. */
   breadcrumbs?: BreadcrumbEntry[];
+  /** Site-level navigation chrome flags. Gates feature rendering. */
+  chrome?: SiteChrome;
   /** Custom theme CSS appended after the generated stylesheet.
    *  Loaded from <project>-theme.css by the build pipeline. */
   themeCSS?: string;
@@ -44,6 +47,8 @@ export interface CompileOptions {
    *  Derived from projectDir by the build pipeline. Falls back to CWD. */
   resolveRoot?: string;
 }
+
+export type { SiteChrome } from "../site-enrich.js";
 
 // ── Render ────────────────────────────────────────────────────
 
