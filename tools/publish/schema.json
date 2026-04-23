@@ -2,17 +2,17 @@
   "input": {
     "type": "object",
     "properties": {
-      "project_path": {
+      "project_dir": {
         "type": "string",
-        "description": "Absolute path to gutenberg.yaml project configuration file.",
-        "x-semantic-type": "ProjectPath"
+        "description": "Absolute path to the project directory containing _site.yaml or _project.yaml.",
+        "x-semantic-type": "ProjectDir"
       },
       "branch": {
         "type": "string",
         "description": "Optional preview branch name for staging deployments."
       }
     },
-    "required": ["project_path"],
+    "required": ["project_dir"],
     "additionalProperties": false
   },
   "output": {

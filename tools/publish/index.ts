@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import { join } from "path";
 import { getConfig, cfFetch } from "../../src/cf.js";
-import { parseProjectConfig, getRenderedDir } from "../../src/project.js";
+import { requireProjectConfig } from "../../src/project-config.js";
 
 function mimeType(path: string): string {
   if (path.endsWith(".css")) return "text/css";
@@ -57,25 +57,26 @@ async function cfAssetFetch(path: string, jwt: string, options: RequestInit = {}
 export async function handler(input: Record<string, unknown>) {
   const { accountId, apiToken } = getConfig();
 
-  const project_path = input.project_path as string;
+  const project_dir = (input.project_dir ?? input.project_path) as string | undefined;
   const branch = input.branch as string | undefined;
 
-  if (!project_path) {
-    throw new Error("'project_path' is required - provide an absolute path to gutenberg.yaml");
+  if (!project_dir) {
+    throw new Error("'project_dir' is required - provide an absolute path to a project directory containing _site.yaml or _project.yaml");
   }
 
   // Read project config
-  const config = await parseProjectConfig(project_path);
-  const project_name = config.project.name;
+  const config = await requireProjectConfig(project_dir);
+  const project_name = config.project;
 
-  // Get rendered directory
-  const renderedDir = await getRenderedDir(project_path);
+  // Site output directory (matches build tool convention)
+  const target = config.targets?.[0] ?? "cloudflare-pages";
+  const siteDir = join(project_dir, ".site", target);
 
-  // Read all files from rendered directory
-  const files = await readDirectory(renderedDir);
+  // Read all files from site directory
+  const files = await readDirectory(siteDir);
 
   if (Object.keys(files).length === 0) {
-    throw new Error(`No files found in directory: ${renderedDir}`);
+    throw new Error(`No files found in ${siteDir}. Run the build tool first to compile specs.`);
   }
 
   const fileEntries = Object.entries(files).map(([rawPath, content]) => {
