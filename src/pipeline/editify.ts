@@ -53,8 +53,22 @@ export function findEditableBlocks(
   const editable = new Set<number>();
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i] as Record<string, unknown> | undefined;
-    if (block && block._editable) {
+    if (!block) continue;
+
+    // Top-level: { _editable: true, table: {...} } (old format)
+    if (block._editable) {
       editable.add(i);
+      continue;
+    }
+
+    // Nested: { table: { _editable: true, headers: [...] } } (new PageSpec format)
+    for (const key of Object.keys(block)) {
+      if (key.startsWith("_")) continue;
+      const val = block[key];
+      if (val && typeof val === "object" && !Array.isArray(val) && (val as Record<string, unknown>)._editable) {
+        editable.add(i);
+        break;
+      }
     }
   }
   return editable;
