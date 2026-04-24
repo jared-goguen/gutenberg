@@ -172,7 +172,7 @@ describe("compileEdit", () => {
 
     expect(result.html).toContain('.gb-edit-field');
     expect(result.html).toContain('.gb-edit-submit');
-    expect(result.html).toContain('border: 1px dashed');
+    expect(result.html).toContain('border: 1.5px dashed');
   });
 
   test("full edit spec with hero + prose + table", () => {

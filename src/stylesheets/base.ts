@@ -1903,7 +1903,7 @@ body[data-animate] .gb-visible .gb-domain-cell:nth-child(6) { animation-delay: 0
   font-weight: 800;
   line-height: 1;
   color: var(--tracker-accent);
-  opacity: calc(0.25 + var(--tracker-intensity, 0) * 0.75);
+  opacity: calc(0.5 + var(--tracker-intensity, 0) * 0.5);
   text-shadow:
     0 0 calc(var(--tracker-intensity, 0) * 30px)
       color-mix(in srgb, var(--tracker-accent) calc(var(--tracker-intensity, 0) * 70%), transparent);

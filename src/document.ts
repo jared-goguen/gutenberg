@@ -461,7 +461,7 @@ body[data-edit-mode] {
   width: 3ch;
   padding: 0;
   outline: none;
-  opacity: calc(0.25 + var(--tracker-intensity, 0) * 0.75);
+  opacity: calc(0.5 + var(--tracker-intensity, 0) * 0.5);
   -moz-appearance: textfield;
 }
 .gb-tracker-input-rating::-webkit-inner-spin-button,
