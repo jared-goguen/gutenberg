@@ -1,13 +1,18 @@
 /**
  * Gutenberg Workers Utilities
  *
- * Utilities and helpers for Cloudflare Pages Functions using Gutenberg
- * Workers Functions can import from this module to render templates dynamically
+ * Utilities and helpers for Cloudflare Pages Functions using Gutenberg.
+ * Workers Functions can import from this module to render templates dynamically.
+ *
+ * Uses the new pipeline: fromYaml → sanitizeSpec → compile → wrapDocument.
+ * Edit mode is currently stubbed — see src/pipeline/editify.ts.
  */
-export { lint, scaffold, enrich, style } from '../pipeline/index.js';
-export type { PageSchema, TemplateSchema, TemplateConfig, PageMeta, PageLayout, Section, RenderOptions, } from '../types.js';
-export { isPageSchema, isTemplateSchema } from '../types.js';
-import type { PageSchema } from '../types.js';
+export { fromYaml, validateSpec } from '../specs/page/yaml.js';
+export { sanitizeSpec } from '../specs/page/sanitize.js';
+export { compile, compileYaml } from '../compile.js';
+export { wrapDocument } from '../document.js';
+export type { PageSpec, SpecBlock, } from '../specs/page/index.js';
+import type { PageSpec } from '../specs/page/index.js';
 /**
  * Configuration for createEditHandler
  */
@@ -19,7 +24,7 @@ export interface EditHandlerConfig {
     onSave?: (data: {
         param: string;
         yaml: string;
-        schema: PageSchema;
+        spec: PageSpec;
     }) => Promise<void>;
 }
 /**

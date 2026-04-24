@@ -31,24 +31,49 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/index-lib.d.ts",
-      "import": "./dist/index-lib.js"
+      "types": "./dist/src/index-lib.d.ts",
+      "bun": "./src/index-lib.ts",
+      "import": "./dist/src/index-lib.js"
+    },
+    "./compile": {
+      "types": "./dist/src/compile.d.ts",
+      "bun": "./src/compile.ts",
+      "import": "./dist/src/compile.js"
+    },
+    "./specs/page": {
+      "types": "./dist/src/specs/page/index.d.ts",
+      "bun": "./src/specs/page/index.ts",
+      "import": "./dist/src/specs/page/index.js"
+    },
+    "./specs/page/yaml": {
+      "types": "./dist/src/specs/page/yaml.d.ts",
+      "bun": "./src/specs/page/yaml.ts",
+      "import": "./dist/src/specs/page/yaml.js"
+    },
+    "./specs/page/sanitize": {
+      "types": "./dist/src/specs/page/sanitize.d.ts",
+      "bun": "./src/specs/page/sanitize.ts",
+      "import": "./dist/src/specs/page/sanitize.js"
+    },
+    "./specs/page/types": {
+      "types": "./dist/src/specs/page/types.d.ts",
+      "bun": "./src/specs/page/types.ts",
+      "import": "./dist/src/specs/page/types.js"
+    },
+    "./pipeline/editify": {
+      "types": "./dist/src/pipeline/editify.d.ts",
+      "bun": "./src/pipeline/editify.ts",
+      "import": "./dist/src/pipeline/editify.js"
+    },
+    "./engines/html5": {
+      "types": "./dist/src/engines/html5.d.ts",
+      "bun": "./src/engines/html5.ts",
+      "import": "./dist/src/engines/html5.js"
     },
     "./workers": {
-      "types": "./dist/workers/index.d.ts",
-      "import": "./dist/workers/index.js"
-    },
-    "./pipeline": {
-      "types": "./dist/pipeline/index.d.ts",
-      "import": "./dist/pipeline/index.js"
-    },
-    "./types": {
-      "types": "./dist/types.d.ts",
-      "import": "./dist/types.js"
-    },
-    "./components": {
-      "types": "./dist/components/index.d.ts",
-      "import": "./dist/components/index.js"
+      "types": "./dist/src/workers/index.d.ts",
+      "bun": "./src/workers/index.ts",
+      "import": "./dist/src/workers/index.js"
     }
   },
   "files": [
@@ -70,9 +95,11 @@
     "culori": "^4.0.0",
     "marked": "^18.0.0",
     "puppeteer": "^21.0.0",
-    "yaml": "^2.4.0"
+    "yaml": "^2.4.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260423.1",
     "@types/bun": "latest",
     "@types/marked": "^6.0.0",
     "typescript": "^5.0.0"

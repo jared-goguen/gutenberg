@@ -2,38 +2,65 @@
   "input": {
     "type": "object",
     "properties": {
-      "project_path": {
+      "project_dir": {
         "type": "string",
-        "description": "Absolute path to gutenberg.yaml project configuration file.",
-        "x-semantic-type": "ProjectPath"
+        "description": "Absolute path to a project directory containing YAML specs (e.g. pages/wiki/).",
+        "x-semantic-type": "DirectoryPath"
+      },
+      "site_dir": {
+        "type": "string",
+        "description": "Output directory for compiled HTML. Defaults to {project_dir}/.site/"
+      },
+      "force": {
+        "type": "boolean",
+        "description": "Force rebuild all specs regardless of content hash."
+      },
+      "section": {
+        "type": "string",
+        "description": "Only build specs in this section (e.g. 'billing'). Omit to build all."
+      },
+      "spec_key": {
+        "type": "string",
+        "description": "Build a single spec by key (e.g. 'billing/dunning.yaml'). Overrides section."
       }
     },
-    "required": ["project_path"],
+    "required": ["project_dir"],
     "additionalProperties": false
   },
   "output": {
     "type": "object",
     "properties": {
-      "project_name": {
-        "type": "string",
-        "description": "Cloudflare Pages project name from config"
+      "total": {
+        "type": "number",
+        "description": "Total number of specs discovered"
       },
-      "rendered_dir": {
-        "type": "string",
-        "description": "Directory containing all rendered HTML files",
-        "x-semantic-type": "DirectoryPath"
+      "compiled": {
+        "type": "number",
+        "description": "Number of specs compiled this build"
       },
-      "pages": {
+      "skipped": {
+        "type": "number",
+        "description": "Number of specs skipped (unchanged)"
+      },
+      "reconciled": {
+        "type": "number",
+        "description": "Number of stale HTML files deleted"
+      },
+      "errors": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
-            "spec_path": { "type": "string" },
-            "html_path": { "type": "string" },
-            "title": { "type": "string" }
+            "key": { "type": "string" },
+            "error": { "type": "string" }
           }
         },
-        "description": "List of all pages that were rendered"
+        "description": "Compilation errors (if any)"
+      },
+      "site_dir": {
+        "type": "string",
+        "description": "Output directory containing compiled HTML",
+        "x-semantic-type": "DirectoryPath"
       }
     }
   }

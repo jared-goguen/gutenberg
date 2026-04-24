@@ -1,6 +1,31 @@
 import puppeteer from "puppeteer";
 import { promises as fs } from "fs";
-import { getArtifactPath } from "../../src/project.js";
+import { join, relative, dirname } from "path";
+import { specKeyToOutputPath } from "../../src/build.js";
+/**
+ * Find the project root by walking up from spec_path looking for _site.yaml or _project.yaml.
+ * Falls back to the spec's directory if no project config found.
+ */
+async function findProjectRoot(specPath) {
+    let dir = dirname(specPath);
+    while (true) {
+        try {
+            await fs.access(join(dir, "_site.yaml"));
+            return dir;
+        }
+        catch { }
+        try {
+            await fs.access(join(dir, "_project.yaml"));
+            return dir;
+        }
+        catch { }
+        const parent = dirname(dir);
+        if (parent === dir)
+            break;
+        dir = parent;
+    }
+    return dirname(specPath);
+}
 export async function handler(input) {
     const spec_path = input.spec_path;
     const width = input.width || 1440;
@@ -8,9 +33,13 @@ export async function handler(input) {
     if (!spec_path) {
         throw new Error("'spec_path' is required - provide an absolute path to a page specification YAML file");
     }
-    // Get artifact paths using convention
-    const html_path = await getArtifactPath(spec_path, "html");
-    const image_path = await getArtifactPath(spec_path, "png");
+    // Derive HTML path from the new .site/ output convention
+    const projectRoot = await findProjectRoot(spec_path);
+    const specKey = relative(projectRoot, spec_path);
+    const outputRelPath = specKeyToOutputPath(specKey);
+    const html_path = join(projectRoot, ".site", "cloudflare-pages", outputRelPath);
+    // Image goes alongside the HTML
+    const image_path = html_path.replace(/\.html$/, ".png");
     let browser = null;
     try {
         // Read HTML from disk
