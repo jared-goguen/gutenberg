@@ -13,19 +13,12 @@
  * This is the shared theme system used by xhtml-tools and svg-tools.
  */
 
-import { readFileSync, writeFileSync } from "fs";
-import { resolve as pathResolve, dirname } from "path";
-import { fileURLToPath } from "url";
 import { scales, reverseResolve, formatRgb } from "./palette.js";
 import { getShade, SHADE_STEPS } from "./oklch.js";
 import type { ShadeStep } from "./oklch.js";
+import THEMES_DATA from "./data/themes.json" with { type: "json" };
 
 const VALID_STEPS = new Set<number>(SHADE_STEPS);
-
-// ── Data file location ───────────────────────────────────────
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const THEMES_PATH = pathResolve(__dirname, "data/themes.json");
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -123,6 +116,7 @@ export const DEFAULT_SCHEME = "cloudflare";
 // ── Theme registry ───────────────────────────────────────────
 // Loaded from data/themes.json at startup. addScheme() writes back.
 
+// Theme registry — loaded from inlined JSON data (no filesystem at runtime).
 export const themes: Record<string, ThemeDefinition> = {};
 
 /** @deprecated Use themes instead. */
@@ -131,28 +125,11 @@ export const schemes = themes;
 /** Names of built-in schemes at load time — protected from deletion */
 const BUILTIN_SCHEMES = new Set<string>();
 
-function loadThemes(): void {
-  try {
-    const raw = readFileSync(THEMES_PATH, "utf-8");
-    const data = JSON.parse(raw) as Record<string, ThemeDefinition>;
-    for (const [name, theme] of Object.entries(data)) {
-      themes[name] = theme;
-      BUILTIN_SCHEMES.add(name);
-    }
-  } catch (err) {
-    // If the file doesn't exist, start with an empty registry.
-    // This shouldn't happen in normal operation.
-    console.error(`Warning: could not load themes from ${THEMES_PATH}: ${(err as Error).message}`);
-  }
+// Initialize from the inlined JSON import
+for (const [name, theme] of Object.entries(THEMES_DATA)) {
+  themes[name] = theme as ThemeDefinition;
+  BUILTIN_SCHEMES.add(name);
 }
-
-function saveThemes(): void {
-  const json = JSON.stringify(themes, null, 2) + "\n";
-  writeFileSync(THEMES_PATH, json, "utf-8");
-}
-
-// Load on module init
-loadThemes();
 
 // ── Theme CRUD ───────────────────────────────────────────────
 
@@ -192,7 +169,6 @@ export function addTheme(
     }
   }
   themes[name] = { colors: colorNames, description, surface, shades, stylesheet };
-  saveThemes();
 }
 
 /** @deprecated Use addTheme instead. */
@@ -200,7 +176,6 @@ export const addScheme = addTheme;
 
 /**
  * Remove a custom theme. Cannot remove built-in themes.
- * Persists the change to data/themes.json.
  * Returns true if removed, false if not found.
  */
 export function removeTheme(name: string): boolean {
@@ -209,7 +184,6 @@ export function removeTheme(name: string): boolean {
   }
   if (!(name in themes)) return false;
   delete themes[name];
-  saveThemes();
   return true;
 }
 

@@ -1,1 +1,0 @@
-{"version":3,"file":"style.d.ts","sourceRoot":"","sources":["../../../src/pipeline/style.ts"],"names":[],"mappings":"AAAA;;GAEG;AAEH,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,qBAAqB,CAAC;AACzD,OAAO,KAAK,EAAE,QAAQ,EAAE,aAAa,EAAE,MAAM,aAAa,CAAC;AAI3D,wBAAgB,KAAK,CACnB,KAAK,EAAE,aAAa,EAAE,EACtB,IAAI,EAAE,QAAQ,GAAG,SAAS,EAC1B,OAAO,GAAE,aAAkB,GAC1B,MAAM,CA+DR"}

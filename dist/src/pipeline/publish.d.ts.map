@@ -1,1 +1,0 @@
-{"version":3,"file":"publish.d.ts","sourceRoot":"","sources":["../../../src/pipeline/publish.ts"],"names":[],"mappings":"AAAA;;;;;GAKG;AAKH,MAAM,WAAW,aAAa;IAC5B,SAAS,EAAE,MAAM,CAAC;CACnB;AAED;;;;;;;GAOG;AACH,wBAAsB,OAAO,CAC3B,IAAI,EAAE,MAAM,EACZ,SAAS,EAAE,MAAM,EACjB,QAAQ,EAAE,MAAM,GACf,OAAO,CAAC,aAAa,CAAC,CAqBxB"}
