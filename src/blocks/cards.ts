@@ -34,8 +34,9 @@ export function renderCards(spec: CardsSpec, ctx: RenderContext, enrichment?: Bl
         const linkRef = typeof item.link === "object" && item.link !== null
           ? (item.link as { title?: string }).title ?? ""
           : item.link as string;
+        const isAbsolute = linkRef.startsWith("/");
         const isExternal = linkRef.startsWith("http://") || linkRef.startsWith("https://") || linkRef.startsWith("//");
-        const href = isExternal
+        const href = (isExternal || isAbsolute)
           ? linkRef
           : ctx.resolveLink?.(linkRef) ?? `#${linkRef}`;
         titleHtml = `<a href="${esc(href)}">${titleHtml}</a>`;
