@@ -184,7 +184,7 @@ const KNOWN_BLOCK_TYPES = new Set<string>([
   "hero", "superhero", "section_label", "cards", "nav_cards", "stat", "page_nav", "prose",
   "flow_chain", "transform", "table", "heading", "info_box",
   "badge", "callout", "install",
-  "timeline", "closing", "recent", "todo", "raw", "pullquote",
+  "timeline", "tracker", "calendar", "closing", "recent", "todo", "raw", "pullquote",
   // Internal types not in SpecBlock union
   "macro", "swatch_strip",
   // Legacy types — accepted by parser, migrated by migrateLegacyBlocks()

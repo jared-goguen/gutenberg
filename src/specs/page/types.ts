@@ -128,6 +128,8 @@ export type SpecBlock =
   | { pullquote: PullquoteSpec }
   | { install: InstallSpec }
   | { timeline: TimelineSpec }
+  | { tracker: TrackerSpec }
+  | { calendar: CalendarSpec }
   | { closing: ClosingSpec | string }
   | { recent: RecentSpec | number }
   | { todo: TodoSpec | string }
@@ -351,6 +353,24 @@ export interface SwatchStripSpec {
   title?: string;
 }
 
+// ── Tracker ───────────────────────────────────────────────────
+
+export interface TrackerItemSpec {
+  label: string;
+  value: string;
+  type: "rating" | "toggle" | "text";
+  max?: number;       // rating upper bound, default 10
+  color?: string;     // explicit color override
+}
+
+export interface TrackerSpec {
+  items: TrackerItemSpec[];
+  cols?: number;       // grid columns, default min(items.length, 4)
+  caption?: string;
+  palette?: string;
+  cohesion?: Cohesion;
+}
+
 export interface BadgeSpec {
   cohesion?: Cohesion;
   items: { label: string; color?: string }[];
@@ -421,6 +441,25 @@ export interface RecentEntry {
   link: string;
   modified: string;
   section?: string;
+}
+
+// ── Calendar ──────────────────────────────────────────────────
+
+export interface CalendarSpec {
+  /** 4-digit year (e.g. 2026). */
+  year: number;
+  /** 1-indexed month (1 = January, 12 = December). */
+  month: number;
+  /** YYYY-MM-DD dates that have entries — rendered with filled indicator. */
+  entries: string[];
+  /** Today's date (YYYY-MM-DD) for highlighting. */
+  today?: string;
+  /** URL pattern for day links. `{date}` is replaced with YYYY-MM-DD.
+   *  Default: `/diary/{date}` */
+  linkPattern?: string;
+  /** URL pattern for month navigation. `{month}` is replaced with YYYY-MM.
+   *  Default: `/?month={month}` */
+  monthPattern?: string;
 }
 
 // ── Helpers ───────────────────────────────────────────────────

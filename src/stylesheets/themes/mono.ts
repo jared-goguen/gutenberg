@@ -2653,4 +2653,116 @@ body[data-animate] .gb-hero-accent {
 .gb-ol-entry:last-child {
   background: rgba(240, 240, 242, 0.03);
 }
+
+/* ── Calendar ─────────────────────────────────────────────── */
+
+.gb-calendar {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.gb-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 var(--gb-space-4) 0;
+}
+
+.gb-calendar-title {
+  font-family: var(--gb-font-heading);
+  font-size: var(--gb-text-lg);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gb-text);
+}
+
+.gb-calendar-nav {
+  font-family: var(--gb-font-body);
+  font-size: var(--gb-text-sm);
+  color: var(--gb-text-secondary);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+
+.gb-calendar-nav:hover {
+  color: var(--gb-accent);
+}
+
+.gb-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.gb-calendar-dow {
+  text-align: center;
+  font-family: var(--gb-font-heading);
+  font-size: var(--gb-text-2xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gb-text-caption);
+  padding: var(--gb-space-2) 0;
+  border-bottom: 1px solid var(--gb-border);
+}
+
+.gb-calendar-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  aspect-ratio: 1;
+  font-family: var(--gb-font-body);
+  font-size: var(--gb-text-sm);
+  color: var(--gb-text-secondary);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+a.gb-calendar-day:hover {
+  background: rgba(240, 240, 242, 0.06);
+  color: var(--gb-text);
+}
+
+.gb-calendar-pad {
+  /* empty offset cells — invisible */
+}
+
+/* Filled day: has an entry → accent dot underneath */
+.gb-calendar-filled {
+  color: var(--gb-text);
+  font-weight: 600;
+}
+
+.gb-calendar-filled::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 0;  /* mono: square dot */
+  background: var(--gb-accent);
+}
+
+/* Today: accent border ring */
+.gb-calendar-today {
+  color: var(--gb-accent);
+  box-shadow: inset 0 0 0 1px var(--gb-accent);
+}
+
+.gb-calendar-today.gb-calendar-filled {
+  color: var(--gb-accent);
+  font-weight: 700;
+}
+
+/* Future: muted and unclickable */
+.gb-calendar-future {
+  opacity: 0.2;
+  pointer-events: none;
+}
 `;

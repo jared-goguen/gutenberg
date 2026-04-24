@@ -362,8 +362,8 @@ export interface DocumentOptions {
 const EDIT_CSS = `
 /* ── Edit mode ────────────────────────────────────────────── */
 body[data-edit-mode] .gb-edit-field {
-  background: transparent;
-  border: 1px dashed color-mix(in srgb, currentColor 25%, transparent);
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  border: 1.5px dashed color-mix(in srgb, currentColor 40%, transparent);
   border-radius: 2px;
   color: inherit;
   font: inherit;
@@ -383,12 +383,12 @@ body[data-edit-mode] .gb-edit-field::placeholder {
   color: color-mix(in srgb, currentColor 30%, transparent);
 }
 body[data-edit-mode] .gb-edit-field:hover {
-  border-color: color-mix(in srgb, currentColor 40%, transparent);
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
 }
 body[data-edit-mode] .gb-edit-field:focus {
   border-color: var(--gb-accent);
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gb-accent) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gb-accent) 30%, transparent);
 }
 body[data-edit-mode] .gb-edit-textarea {
   min-height: 12em;
@@ -447,7 +447,85 @@ body[data-edit-mode] .gb-edit-submit:hover {
 body[data-edit-mode] {
   padding-bottom: 4rem;
 }
+
+/* ── Tracker edit: rating number input ────────────────────── */
+.gb-tracker-input-rating {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid color-mix(in srgb, var(--tracker-accent) 40%, transparent);
+  color: var(--tracker-accent);
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  width: 3ch;
+  padding: 0;
+  outline: none;
+  opacity: calc(0.25 + var(--tracker-intensity, 0) * 0.75);
+  -moz-appearance: textfield;
+}
+.gb-tracker-input-rating::-webkit-inner-spin-button,
+.gb-tracker-input-rating::-webkit-outer-spin-button { display: none; }
+.gb-tracker-input-rating:focus {
+  border-bottom-color: var(--tracker-accent);
+  opacity: 1;
+}
+@media (max-width: 600px) {
+  .gb-tracker-input-rating { font-size: 2rem; }
+}
+
+/* ── Tracker edit: toggle checkbox as pill ─────────────────── */
+.gb-tracker-toggle-switch {
+  cursor: pointer;
+  user-select: none;
+}
+.gb-tracker-toggle-switch input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.gb-tracker-toggle-switch .gb-tracker-pill {
+  cursor: pointer;
+}
+.gb-tracker-toggle-switch:hover .gb-tracker-pill {
+  box-shadow: 0 0 16px color-mix(in srgb, var(--tracker-accent) 25%, transparent);
+}
+
+/* ── Tracker edit: text input ──────────────────────────────── */
+.gb-tracker-input-text {
+  background: color-mix(in srgb, currentColor 4%, transparent);
+  border: 1.5px dashed color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 4px;
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  max-width: 10rem;
+  padding: 0.3em 0.5em;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.gb-tracker-input-text:focus {
+  border-color: var(--gb-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gb-accent) 25%, transparent);
+}
 `;
+
+/** Toggle script — updates pill text and data-active when checkbox changes. Edit mode only. */
+const TOGGLE_SCRIPT = `<script>
+(function(){
+  document.querySelectorAll('.gb-tracker-toggle-switch input[type="checkbox"]').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      var pill=cb.parentElement.querySelector('.gb-tracker-pill');
+      var item=cb.closest('.gb-tracker-toggle');
+      pill.textContent=cb.checked?'Yes':'No';
+      item.dataset.active=String(cb.checked);
+    });
+  });
+})();
+</script>`;
 
 /** Edit link CSS — floating "Edit" button in view mode. */
 const EDIT_LINK_CSS = `
@@ -574,6 +652,7 @@ ${editFormOpen}
 ${bodyContent}
 ${editFormClose}
 ${editLinkHtml}
+${opts.editMode ? TOGGLE_SCRIPT : ''}
 ${ENTRANCE_SCRIPT}
 ${showcaseScripts.join("\n")}
 </body>

@@ -2,7 +2,8 @@ import type {
   SpecBlock, HeroSpec, SuperheroSpec, ClosingSpec,
   CardsSpec, StatSpec, PageNavSpec, ProseSpec, SectionLabelSpec,
   FlowChainSpec, BadgeSpec, TableSpec, HeadingSpec,
-  InfoBoxSpec, TransformSpec, CalloutSpec, TimelineSpec,
+  InfoBoxSpec, TransformSpec, CalloutSpec, TimelineSpec, TrackerSpec,
+  CalendarSpec,
 } from "../specs/page/index.js";
 import { blockType, blockValue } from "../specs/page/index.js";
 import type { RenderContext } from "./types.js";
@@ -21,6 +22,8 @@ import { renderPageNav } from "./page-nav.js";
 import { renderTransform } from "./transform.js";
 import { renderCallout } from "./callout.js";
 import { renderTimeline } from "./timeline.js";
+import { renderTracker } from "./tracker.js";
+import { renderCalendar } from "./calendar.js";
 import { renderSuperhero } from "./superhero.js";
 import type { ShowcaseFlags, BlockEnrichment } from "../enrich.js";
 
@@ -79,6 +82,10 @@ export function renderBlock(
       return renderCallout(val as CalloutSpec, ctx);
     case "timeline":
       return renderTimeline(val as TimelineSpec, ctx);
+    case "tracker":
+      return renderTracker(val as TrackerSpec, ctx);
+    case "calendar":
+      return renderCalendar(val as CalendarSpec, ctx);
 
     default:
       return `<!-- gb: unknown block "${type}" -->`;

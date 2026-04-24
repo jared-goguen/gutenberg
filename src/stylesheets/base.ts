@@ -1858,4 +1858,98 @@ body[data-animate] .gb-visible .gb-domain-cell:nth-child(6) { animation-delay: 0
 .gb-ol-kind {
   margin-left: auto;
 }
+
+/* ── Tracker ──────────────────────────────────────────────── */
+
+.gb-tracker {
+  display: grid;
+  grid-template-columns: repeat(var(--tracker-cols, 3), 1fr);
+  gap: 1.25rem 1rem;
+}
+
+.gb-tracker-caption {
+  grid-column: 1 / -1;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, currentColor 45%, transparent);
+  margin-bottom: 0.25rem;
+}
+
+.gb-tracker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0.75rem 0.25rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.gb-tracker-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+  margin-top: 0.5rem;
+}
+
+/* ── Tracker: Rating ──────────────────────────────────────── */
+
+.gb-tracker-rating .gb-tracker-value {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--tracker-accent);
+  opacity: calc(0.25 + var(--tracker-intensity, 0) * 0.75);
+  text-shadow:
+    0 0 calc(var(--tracker-intensity, 0) * 30px)
+      color-mix(in srgb, var(--tracker-accent) calc(var(--tracker-intensity, 0) * 70%), transparent);
+  transition: opacity 0.3s, text-shadow 0.3s;
+}
+
+/* ── Tracker: Toggle ──────────────────────────────────────── */
+
+.gb-tracker-toggle .gb-tracker-pill {
+  display: inline-block;
+  padding: 0.375rem 1.125rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.gb-tracker-toggle[data-active="true"] .gb-tracker-pill {
+  background: color-mix(in srgb, var(--tracker-accent) 18%, transparent);
+  color: var(--tracker-accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tracker-accent) 15%, transparent);
+}
+
+.gb-tracker-toggle[data-active="false"] .gb-tracker-pill {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  color: color-mix(in srgb, currentColor 30%, transparent);
+}
+
+/* ── Tracker: Text ────────────────────────────────────────── */
+
+.gb-tracker-text .gb-tracker-value {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* ── Tracker: Responsive ──────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .gb-tracker {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .gb-tracker-rating .gb-tracker-value {
+    font-size: 2rem;
+  }
+}
 `;
