@@ -53,6 +53,8 @@ export interface CompileOptions {
   /** Set of spec.blocks[] indices that are editable.
    *  Only blocks in this set render form inputs; others render normally. */
   editableBlocks?: Set<number>;
+  /** URL for a floating "Edit" link in view mode. Not shown in edit mode. */
+  editLink?: string;
 }
 
 export type { SiteChrome } from "../site-enrich.js";
@@ -232,6 +234,7 @@ export function renderHtml5(p: CompilePlan, options?: CompileOptions): CompileRe
     hashSync: true,
     fontUrl: t.fontUrl,
     editMode,
+    editLink: editMode ? undefined : options?.editLink,
   });
 
   return { html };

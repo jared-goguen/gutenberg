@@ -348,6 +348,8 @@ export interface DocumentOptions {
   fontUrl?: string;
   /** Enable edit mode — wraps body in <form>, adds submit button, injects edit CSS. */
   editMode?: boolean;
+  /** URL for an "Edit" link rendered as a floating button. Shown in view mode only (not edit mode). */
+  editLink?: string;
 }
 
 /**
@@ -447,6 +449,30 @@ body[data-edit-mode] {
 }
 `;
 
+/** Edit link CSS — floating "Edit" button in view mode. */
+const EDIT_LINK_CSS = `
+.gb-edit-link {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--gb-accent);
+  color: var(--gb-surface, #0a0a0a);
+  text-decoration: none;
+  border-radius: 4px;
+  font: 600 0.8125rem/1.4 var(--gb-font-body, system-ui);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 100;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.gb-edit-link:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+`;
+
 export function wrapDocument(opts: DocumentOptions): string {
   const ogTags: string[] = [];
   ogTags.push(`<meta property="og:title" content="${esc(opts.title)}">`);
@@ -519,6 +545,12 @@ export function wrapDocument(opts: DocumentOptions): string {
     ? `<div class="gb-edit-bar"><span class="gb-edit-status">Editing</span><button type="submit" class="gb-edit-submit">Save</button></div></form>`
     : '';
 
+  // View-mode edit link: floating button to switch to edit mode
+  const editLinkHtml = (!opts.editMode && opts.editLink)
+    ? `<a class="gb-edit-link" href="${esc(opts.editLink)}">Edit</a>`
+    : '';
+  const editLinkCss = (!opts.editMode && opts.editLink) ? EDIT_LINK_CSS : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -533,6 +565,7 @@ ${jsonLd}
 <style>
 ${opts.stylesheet}
 ${editCss}
+${editLinkCss}
 </style>
 </head>
 <body data-density="${opts.density}" data-separation="${opts.separation}" data-emphasis="${opts.emphasis}" data-shadow="${opts.shadow}"${layoutAttr}${textureAttr}${(opts.hashSync ?? true) ? ' data-hash-sync' : ''}${editAttr}>
@@ -540,6 +573,7 @@ ${progressBar}
 ${editFormOpen}
 ${bodyContent}
 ${editFormClose}
+${editLinkHtml}
 ${ENTRANCE_SCRIPT}
 ${showcaseScripts.join("\n")}
 </body>
