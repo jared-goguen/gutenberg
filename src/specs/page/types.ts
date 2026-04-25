@@ -359,8 +359,13 @@ export interface TrackerItemSpec {
   label: string;
   value: string;
   type: "rating" | "toggle" | "text";
-  max?: number;       // rating upper bound, default 10
+  max?: number;       // rating upper bound, default 5
   color?: string;     // explicit color override
+  /** Polarity for rating items. Determines color direction from neutral.
+   *  "negative": high = bad (red), low = good (green). E.g., Depression.
+   *  "positive": high = good (green), low = bad (red). E.g., Joy.
+   *  Omit for neutral items where direction has no good/bad semantics. */
+  polarity?: "positive" | "negative";
 }
 
 export interface TrackerSpec {

@@ -1896,18 +1896,103 @@ body[data-animate] .gb-visible .gb-domain-cell:nth-child(6) { animation-delay: 0
   margin-top: 0.5rem;
 }
 
-/* ── Tracker: Rating ──────────────────────────────────────── */
+/* ── Tracker: Rating Scale ─────────────────────────────────── */
+/* 5-segment horizontal bar. Selected segment filled with polarity color. */
+/* Neutral (3) always has a tick mark as reference point. */
 
 .gb-tracker-rating .gb-tracker-value {
-  font-size: 2.75rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--tracker-accent);
-  opacity: calc(0.5 + var(--tracker-intensity, 0) * 0.5);
-  text-shadow:
-    0 0 calc(var(--tracker-intensity, 0) * 30px)
-      color-mix(in srgb, var(--tracker-accent) calc(var(--tracker-intensity, 0) * 70%), transparent);
-  transition: opacity 0.3s, text-shadow 0.3s;
+  width: 100%;
+}
+
+.gb-tracker-scale {
+  display: flex;
+  gap: 3px;
+  width: 100%;
+}
+
+.gb-tracker-seg {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  border-radius: 2px;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+/* Neutral marker — always visible as the baseline reference */
+.gb-tracker-neutral::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.35;
+}
+
+/* Active segment: view mode (static) */
+.gb-tracker-active {
+  background: var(--scale-color);
+  box-shadow: 0 0 calc(var(--scale-intensity, 0) * 16px)
+    color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0) * 60%), transparent);
+}
+
+/* Override neutral tick color when active */
+.gb-tracker-active.gb-tracker-neutral::after {
+  background: currentColor;
+  opacity: 0.5;
+}
+
+/* ── Edit mode: radio-button segments ─────────────────────── */
+
+.gb-tracker-scale input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Edit: selected segment — uses CSS :has() to derive color from polarity */
+.gb-tracker-scale-edit input:checked + .gb-tracker-seg {
+  background: var(--scale-color);
+  box-shadow: 0 0 calc(var(--scale-intensity, 0) * 14px)
+    color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0) * 50%), transparent);
+}
+
+/* Live color update: CSS :has() switches --scale-color when user taps a segment */
+.gb-tracker-scale-edit:has(input[value="1"]:checked) { --scale-color: var(--scale-low); --scale-intensity: 1; }
+.gb-tracker-scale-edit:has(input[value="2"]:checked) { --scale-color: var(--scale-low); --scale-intensity: 0.5; }
+.gb-tracker-scale-edit:has(input[value="3"]:checked) { --scale-color: color-mix(in srgb, currentColor 25%, transparent); --scale-intensity: 0; }
+.gb-tracker-scale-edit:has(input[value="4"]:checked) { --scale-color: var(--scale-high); --scale-intensity: 0.5; }
+.gb-tracker-scale-edit:has(input[value="5"]:checked) { --scale-color: var(--scale-high); --scale-intensity: 1; }
+
+/* Edit: hover feedback */
+.gb-tracker-scale-edit label.gb-tracker-seg {
+  cursor: pointer;
+}
+.gb-tracker-scale-edit label.gb-tracker-seg:hover {
+  background: color-mix(in srgb, var(--scale-color, currentColor) 25%, transparent);
+  transform: scale(1.1);
+}
+.gb-tracker-scale-edit label.gb-tracker-seg:active {
+  transform: scale(0.95);
+}
+
+/* Edit: keyboard focus */
+.gb-tracker-scale-edit input:focus-visible + .gb-tracker-seg {
+  outline: 2px solid var(--gb-text-link, rgb(93,143,255));
+  outline-offset: 2px;
+}
+
+/* Responsive: square segments on mobile */
+@media (max-width: 600px) {
+  .gb-tracker-seg { aspect-ratio: 1; }
 }
 
 /* ── Tracker: Toggle ──────────────────────────────────────── */

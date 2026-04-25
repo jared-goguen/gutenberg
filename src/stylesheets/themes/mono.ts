@@ -2654,6 +2654,10 @@ body[data-animate] .gb-hero-accent {
   background: rgba(240, 240, 242, 0.03);
 }
 
+/* ── Tracker: Mono overrides ──────────────────────────────── */
+.gb-tracker-seg { border-radius: 0; }
+.gb-tracker-item { border-radius: 0; }
+
 /* ── Calendar ─────────────────────────────────────────────── */
 
 .gb-calendar {
