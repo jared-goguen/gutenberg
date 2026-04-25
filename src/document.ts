@@ -350,6 +350,8 @@ export interface DocumentOptions {
   editMode?: boolean;
   /** URL for an "Edit" link rendered as a floating button. Shown in view mode only (not edit mode). */
   editLink?: string;
+  /** URL for delete action (POST with _method=delete). Shows a delete button on view pages. */
+  deleteLink?: string;
 }
 
 /**
@@ -527,12 +529,18 @@ const TOGGLE_SCRIPT = `<script>
 })();
 </script>`;
 
-/** Edit link CSS — floating "Edit" button in view mode. */
+/** Edit + Delete link CSS — floating action bar in view mode. */
 const EDIT_LINK_CSS = `
-.gb-edit-link {
+.gb-view-actions {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  z-index: 100;
+}
+.gb-edit-link {
   padding: 0.5rem 1.5rem;
   background: var(--gb-accent);
   color: var(--gb-surface, #0a0a0a);
@@ -542,12 +550,28 @@ const EDIT_LINK_CSS = `
   letter-spacing: 0.03em;
   text-transform: uppercase;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  z-index: 100;
   transition: opacity 0.15s, transform 0.15s;
 }
 .gb-edit-link:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  text-decoration: none;
+}
+.gb-delete-btn {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--gb-text-muted, #787880);
+  border: 1px solid var(--gb-chrome-border, #2c2c32);
+  border-radius: 4px;
+  font: 600 0.8125rem/1.4 var(--gb-font-body, system-ui);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.gb-delete-btn:hover {
+  color: var(--gb-danger, rgb(248,113,113));
+  border-color: var(--gb-danger, rgb(248,113,113));
 }
 `;
 
@@ -623,11 +647,25 @@ export function wrapDocument(opts: DocumentOptions): string {
     ? `<div class="gb-edit-bar"><span class="gb-edit-status">Editing</span><button type="submit" class="gb-edit-submit">Save</button></div></form>`
     : '';
 
-  // View-mode edit link: floating button to switch to edit mode
-  const editLinkHtml = (!opts.editMode && opts.editLink)
-    ? `<a class="gb-edit-link" href="${esc(opts.editLink)}">Edit</a>`
-    : '';
-  const editLinkCss = (!opts.editMode && opts.editLink) ? EDIT_LINK_CSS : '';
+  // View-mode actions: floating edit + delete buttons
+  const hasViewActions = !opts.editMode && (opts.editLink || opts.deleteLink);
+  let viewActionsHtml = '';
+  if (hasViewActions) {
+    const parts: string[] = [];
+    if (opts.deleteLink) {
+      parts.push(
+        `<form method="POST" action="${esc(opts.deleteLink)}" style="margin:0">` +
+        `<input type="hidden" name="_method" value="delete">` +
+        `<button type="submit" class="gb-delete-btn" onclick="return confirm('Delete this entry? This cannot be undone.')">Delete</button>` +
+        `</form>`
+      );
+    }
+    if (opts.editLink) {
+      parts.push(`<a class="gb-edit-link" href="${esc(opts.editLink)}">Edit</a>`);
+    }
+    viewActionsHtml = `<div class="gb-view-actions">${parts.join('')}</div>`;
+  }
+  const editLinkCss = hasViewActions ? EDIT_LINK_CSS : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -651,7 +689,7 @@ ${progressBar}
 ${editFormOpen}
 ${bodyContent}
 ${editFormClose}
-${editLinkHtml}
+${viewActionsHtml}
 ${opts.editMode ? TOGGLE_SCRIPT : ''}
 ${ENTRANCE_SCRIPT}
 ${showcaseScripts.join("\n")}
