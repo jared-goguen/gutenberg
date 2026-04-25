@@ -1937,9 +1937,9 @@ body[data-animate] .gb-visible .gb-domain-cell:nth-child(6) { animation-delay: 0
 
 /* Active segment: view mode (static) */
 .gb-tracker-active {
-  background: var(--scale-color);
+  background: color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0.3) * 100%), transparent);
   box-shadow: 0 0 calc(var(--scale-intensity, 0) * 16px)
-    color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0) * 60%), transparent);
+    color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0) * 50%), transparent);
 }
 
 /* Override neutral tick color when active */
@@ -1960,16 +1960,16 @@ body[data-animate] .gb-visible .gb-domain-cell:nth-child(6) { animation-delay: 0
 
 /* Edit: selected segment — uses CSS :has() to derive color from polarity */
 .gb-tracker-scale-edit input:checked + .gb-tracker-seg {
-  background: var(--scale-color);
-  box-shadow: 0 0 calc(var(--scale-intensity, 0) * 14px)
+  background: color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0.3) * 100%), transparent);
+  box-shadow: 0 0 calc(var(--scale-intensity, 0) * 16px)
     color-mix(in srgb, var(--scale-color) calc(var(--scale-intensity, 0) * 50%), transparent);
 }
 
 /* Live color update: CSS :has() switches --scale-color when user taps a segment */
 .gb-tracker-scale-edit:has(input[value="1"]:checked) { --scale-color: var(--scale-low); --scale-intensity: 1; }
-.gb-tracker-scale-edit:has(input[value="2"]:checked) { --scale-color: var(--scale-low); --scale-intensity: 0.5; }
-.gb-tracker-scale-edit:has(input[value="3"]:checked) { --scale-color: color-mix(in srgb, currentColor 25%, transparent); --scale-intensity: 0; }
-.gb-tracker-scale-edit:has(input[value="4"]:checked) { --scale-color: var(--scale-high); --scale-intensity: 0.5; }
+.gb-tracker-scale-edit:has(input[value="2"]:checked) { --scale-color: var(--scale-low); --scale-intensity: 0.65; }
+.gb-tracker-scale-edit:has(input[value="3"]:checked) { --scale-color: var(--tracker-accent); --scale-intensity: 0.3; }
+.gb-tracker-scale-edit:has(input[value="4"]:checked) { --scale-color: var(--scale-high); --scale-intensity: 0.65; }
 .gb-tracker-scale-edit:has(input[value="5"]:checked) { --scale-color: var(--scale-high); --scale-intensity: 1; }
 
 /* Edit: hover feedback */

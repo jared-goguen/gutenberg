@@ -69,19 +69,23 @@ function ratingScaleVars(item: TrackerItemSpec): string {
 function ratingColor(numVal: number, polarity?: "positive" | "negative"): { color: string; intensity: number } {
   const neutral = 3;
   const deviation = Math.abs(numVal - neutral);
-  const intensity = Math.min(1, deviation / 2); // 0 at 3, 0.5 at 2/4, 1.0 at 1/5
+  // Intensity ramps from 0.3 (neutral) to 1.0 (extreme) — never fully invisible
+  const intensity = 0.3 + Math.min(1, deviation / 2) * 0.7;
 
+  // Neutral: use the item's accent color at low intensity (not grey)
   if (numVal === neutral) {
-    return { color: "color-mix(in srgb, currentColor 25%, transparent)", intensity: 0 };
+    return { color: "var(--tracker-accent)", intensity: 0.3 };
   }
 
-  const isGoodDirection =
-    (polarity === "positive" && numVal > neutral) ||
-    (polarity === "negative" && numVal < neutral);
-
+  // No polarity: always accent color, intensity scales with deviation
   if (!polarity) {
     return { color: "var(--tracker-accent)", intensity };
   }
+
+  // Polarity: good direction = green, bad direction = red
+  const isGoodDirection =
+    (polarity === "positive" && numVal > neutral) ||
+    (polarity === "negative" && numVal < neutral);
 
   return {
     color: isGoodDirection ? "var(--gb-success)" : "var(--gb-danger)",
