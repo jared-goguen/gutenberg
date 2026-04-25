@@ -1,466 +1,265 @@
 # Gutenberg — Agent Instructions
 
 ## Runtime
+
 Use Bun throughout. Never use Node.js, ts-node, jest, or vitest.
 
-- `bun run src/index.ts` — start the MCP server
 - `bun test` — run all tests
-- `bun test tests/integration` — integration tests (spawns real server subprocess)
+- `bun run src/index.ts` — start MCP server
+- `bun build` or `tsc --noEmitOnError` — compile to dist/
 
-## Project-Level Architecture
+## Architecture
 
-**gutenberg.yaml is the unit of work.** All pages in a project share one `gutenberg.yaml` config file that defines the Cloudflare Pages project name. Pages are auto-discovered, navigation is auto-injected, and the `build` + `publish` tools operate on the entire project at once.
+Dynamic page builder and edit mode framework for Cloudflare Pages. Renders YAML page specs to semantic HTML with embedded CSS. Mono theme only. First-class edit mode enables interactive form-based pages (diaries, trackers, surveys).
 
-### Directory Structure
+The library is consumed as an npm package (`@jared-goguen/gutenberg`) by downstream apps like dbt-diary-cards. It also runs as an MCP server exposing build/lint/publish/snapshot tools.
 
-```
-examples/
-  gutenberg.yaml           ← Project config (just the CF Pages project name)
-  landing-page.yaml        ← Auto-discovered page
-  docs-page.yaml           ← Auto-discovered page
-  product.yaml             ← Auto-discovered page
-  rendered/                ← Conventional output dir (auto-created)
-    landing-page.lint.json
-    landing-page.scaffold.json
-    landing-page.enrich.json
-    landing-page.html
-    landing-page.png
-    docs-page.lint.json
-    docs-page.scaffold.json
-    docs-page.enrich.json
-    docs-page.html
-    docs-page.png
-    product.lint.json
-    product.scaffold.json
-    product.enrich.json
-    product.html
-    product.png
-```
-
-### Project Config (`gutenberg.yaml`)
-
-```yaml
-project:
-  name: gutenberg-examples
-```
-
-That's it. Everything else is convention:
-- **Pages:** All `.yaml` files in the project directory (recursively), excluding `gutenberg.yaml` itself
-- **Navigation:** Auto-generated from all page titles, auto-injected into each page's `navigation` section
-- **Output:** Always `{project_dir}/rendered/`, mirroring input structure
-- **`_index.yaml`:** Renders to `index.html` at that directory level
-
----
-
-## The 5 Pipeline Stages
-
-All pipeline tools now take **`spec_path` only** — artifact paths are derived by convention.
-
-```
-YAML Spec
-    ↓
-[LINT]           → {spec_dir}/rendered/{name}.lint.json
-    ↓
-[SCAFFOLD]       → {spec_dir}/rendered/{name}.scaffold.json
-    ↓
-[ENRICH]         → {spec_dir}/rendered/{name}.enrich.json
-    ↓
-[STYLE]          → {spec_dir}/rendered/{name}.html
-    ↓
-[SNAPSHOT]       → {spec_dir}/rendered/{name}.png
-```
-
-### Tool Reference (Individual Stages)
-
-| Tool | Input | Output | Purpose |
-|---|---|---|---|
-| `lint` | `spec_path` | `lint.json` | Parse and validate spec |
-| `scaffold` | `spec_path` | `scaffold.json` | Build classless RenderNode tree |
-| `enrich` | `spec_path` | `enrich.json` | Resolve CSS classes from roles/layout |
-| `style` | `spec_path` | `{name}.html` | Serialize to HTML with theme CSS |
-| `snapshot` | `spec_path`, `width?`, `height?` | `{name}.png` | Screenshot in headless browser |
-
-All artifact paths are derived using `getArtifactPath(spec_path, stage)` from `src/project.ts`.
-
----
-
-## Project-Level Tools
-
-| Tool | Input | Output | Purpose |
-|---|---|---|---|
-| `build` | `project_path` (gutenberg.yaml) | `{ project_name, rendered_dir, pages[] }` | Build all pages (auto-discovery, nav injection, full pipeline) |
-| `publish` | `project_path` | `{ url, project_name }` | Deploy entire `rendered/` to Cloudflare Pages |
-
----
-
-## Agent Workflows
-
-### Build and Deploy an Entire Site
-
-**Recommended workflow** — use project-level tools:
-```
-build(project_path="examples/gutenberg.yaml")
-publish(project_path="examples/gutenberg.yaml")
-```
-
-The `build` tool:
-1. Auto-discovers all `.yaml` pages in the project
-2. Lints all pages to gather titles
-3. Builds a flat navigation structure from titles
-4. Injects nav into each page's `navigation` section
-5. Runs the full pipeline (scaffold → enrich → style) for each page
-6. Writes all HTML to `rendered/` mirroring input structure
-
-The `publish` tool:
-1. Reads project config → gets `project_name`
-2. Finds `rendered/` directory
-3. Deploys entire directory to Cloudflare Pages
-4. Returns live URL
-
-**Result:** One deployment containing all pages at their respective paths (`/landing-page`, `/docs-page`, `/product`).
-
-### Inspect Individual Stages During Development
-
-For debugging or fine-grained control, run pipeline stages individually:
-```
-lint(spec_path="examples/landing-page.yaml")
-scaffold(spec_path="examples/landing-page.yaml")
-enrich(spec_path="examples/landing-page.yaml")
-style(spec_path="examples/landing-page.yaml")
-snapshot(spec_path="examples/landing-page.yaml")
-```
-
-All stages write to `examples/rendered/{name}.{stage}.{ext}` by convention — no path threading needed.
-
----
-
-## Key Conventions
-
-### Tool Structure
-- **Location:** `tools/<tool_name>/`
-- **Handler:** `tools/<tool_name>/index.ts` — export one async function named `handler`
-- **Schema:** `tools/<tool_name>/schema.json` — input/output types with `x-semantic-type` annotations
-- **Description:** `tools/<tool_name>/purpose.md` — first line is the MCP description
-- **Auto-discovery:** `src/core/serve.ts` scans `tools/*/index.ts` automatically
-
-### Artifact Paths (Convention Over Configuration)
-
-**All pipeline tools derive artifact paths automatically** using `src/project.ts` utilities:
-
-```typescript
-findProjectRoot(specPath)           // Walks up to find gutenberg.yaml
-getRenderedDir(specPath)            // {projectRoot}/rendered/
-getArtifactPath(specPath, stage)    // {renderedDir}/{relPath}/{name}.{stage}.ext
-```
-
-No more passing `lint_path`, `scaffold_path`, `enrich_path` between tools. Every tool takes `spec_path` and derives what it needs.
-
-### Navigation Auto-Injection
-
-The `build` tool automatically:
-1. Gathers all page titles from lint artifacts
-2. Builds a flat nav: `[{ text: "Page Title", href: "/page-name" }]`
-3. Injects nav into each page's `navigation` section (or prepends one if missing)
-4. Filters out the current page from its own nav (no self-linking)
-
-Spec authors don't need to manually maintain nav links — it's computed from the project.
-
-### Credentials & Environment
-
-- **Cloudflare credentials** (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`) are injected by `opencode.json` into the MCP subprocess
-- They are **NOT** available in your shell environment during agent execution
-- Always call CF tools through the MCP interface — never by importing handlers directly in scripts
-- Never write standalone scripts; write tools instead (they're discoverable and get proper credentials)
-
----
-
-## Project Structure
+## Source Structure
 
 ```
 src/
-  index.ts              # entry point — stdio MCP server
-  core/serve.ts         # convention server runtime — auto-discovers tools
-  types.ts              # all TypeScript interfaces (PageSchema, Section types, etc.)
-  parser.ts             # parseSchema() — YAML → PageSchema
-  validator.ts          # validateSchema() — returns { valid, errors, warnings }
-  project.ts            # NEW: project-level utilities (findProjectRoot, getArtifactPath, etc.)
-  pipeline/
-    index.ts            # orchestrator (re-exports all stages)
-    lint.ts             # LINT stage
-    scaffold.ts         # SCAFFOLD stage
-    enrich.ts           # ENRICH stage
-    style.ts            # STYLE stage
-    publish.ts          # file write helpers
-  components/
-    hero.{data,scaffold}.ts
-    features.{data,scaffold}.ts
-    content.{data,scaffold}.ts
-    cta.{data,scaffold}.ts
-    navigation.{data,scaffold}.ts
-    footer.{data,scaffold}.ts
-  scaffold/node.ts      # RenderNode, AnnotatedNode types
-  enricher.ts           # Class name resolution logic
-  serializer.ts         # HTML serialization
-  stylesheets/
-    base.ts             # CSS reset + 13 structural semantic classes
-    ink.ts, mono.ts, ocean.ts, light.ts, dark.ts  # Theme implementations
-  cf.ts                 # Cloudflare API helpers
+  index.ts              # MCP server entry point
+  index-lib.ts          # Library exports for consumers
+  cli.ts                # CLI entry point
+  compile.ts            # compile(), compileYaml(), plan()
+  backend.ts            # CompilePlan, RenderResult, RenderEngine types
+  build.ts              # Project build: discoverSpecs(), plan(), render()
+  document.ts           # wrapDocument() — HTML shell, edit CSS, view actions bar
+  plan.ts               # Navigation tree, yaml cache, title map, graph
+  project.ts            # Project path utilities
+  project-config.ts     # readProjectConfig() — reads _site.yaml (or _project.yaml)
+  enrich.ts             # CSS class resolution from semantic roles
+  tonal-enrich.ts       # Chromata tonal enrichment
+  inline.ts             # Inline element processing
+  markdown.ts           # Markdown rendering via marked
+  site-enrich.ts        # Site-level enrichment
+  site-nav.ts           # Navigation generation
+  right-rail.ts         # Right rail / TOC
   theme.ts              # Theme resolution
-  
-tools/                  # MCP tools (auto-discovered)
-  lint/                 # Parse & validate spec (spec_path only)
-  scaffold/             # Build RenderNode tree (spec_path only)
-  enrich/               # Resolve CSS classes (spec_path only)
-  style/                # Generate HTML (spec_path only)
-  snapshot/             # Screenshot (spec_path + viewport dims)
-  build/                # NEW: Build entire project (project_path)
-  publish/              # Deploy to CF Pages (project_path)
-  create_project/       # Cloudflare Pages project management
-  list_projects/
+
+  blocks/               # 17 block renderers
+    dispatch.ts         # Block type → renderer routing
+    types.ts            # Block renderer types
+    transform.ts        # Block transformation utilities
+    hero.ts             # Page header with title, subtitle, body
+    superhero.ts        # Full-width dramatic header
+    prose.ts            # Markdown text content
+    table.ts            # Data table with headers and rows
+    tracker.ts          # Rating/toggle/text grid (1-5 segmented scale)
+    calendar.ts         # Monthly grid with filled/today/future indicators
+    cards.ts            # Card grid layout
+    stat.ts             # Metric/statistic display
+    timeline.ts         # Chronological events
+    flow-chain.ts       # Step-by-step process
+    info-box.ts         # Highlighted information panel
+    callout.ts          # Emphasized message
+    heading.ts          # Section heading
+    section-label.ts    # Uppercase section divider
+    badge.ts            # Status badge
+    page-nav.ts         # Navigation links
+    closing.ts          # Page footer content
+
+  chromata/             # OkLCH color engine
+    themes.ts           # Inlined themes.json (Workers-compatible)
+    palette.ts          # Palette generation
+    oklch.ts            # OkLCH color space
+    color-functions.ts  # Color manipulation
+    resolve-colors.ts   # Color resolution
+    semantic.ts         # Semantic color mapping
+    sequence.ts         # Accent color sequencing
+    tonal.ts            # Tonal enrichment
+
+  specs/
+    page/               # Page spec types and parsing
+      types.ts          # PageSpec, SpecBlock, TrackerItemSpec, CalendarSpec, etc.
+      yaml.ts           # fromYaml(), toYaml()
+      sanitize.ts       # sanitizeSpec(), lintSpec()
+      schema.ts         # Schema definitions
+      lint.ts           # Lint rules
+      convention.ts     # Naming conventions
+      visual-lint.ts    # Visual validation
+      semantics.ts      # Semantic analysis
+      resolved.ts       # Resolved spec types
+      index.ts          # Re-exports
+    site/               # Site config
+      types.ts          # SiteSpec, SpecEntry
+      yaml.ts           # fromSiteYaml()
+      nav.ts, lint.ts, keys.ts, graph.ts, index.ts
+    meta/               # Metadata types
+      types.ts, index.ts
+
+  pipeline/
+    editify.ts          # compileEdit(), findEditableBlocks()
+
+  stylesheets/
+    base.ts             # CSS reset + structural classes + scale segment CSS
+    index.ts            # Stylesheet router
+    mono.ts             # Mono theme generator
+    themes/
+      mono.ts           # Mono theme implementation (~vermillion accent, Helvetica Neue, 8px grid, zero radius)
+
+  engines/
+    html5.ts            # HTML5 render engine, CompileOptions
+
+  workers/
+    index.ts            # createEditHandler() for CF Pages Functions
+
+  core/                 # MCP server infrastructure
+    serve.ts            # Auto-discovers tools from tools/
+    types.ts, hooks.ts, enforcement.ts, index.ts
+
+tools/                  # MCP tools (auto-discovered by serve.ts)
+  build/                # Build entire project (project_path → rendered HTML)
+  lint/                 # Parse & validate spec
+  publish/              # Deploy to CF Pages
+  snapshot/             # Screenshot via headless browser
+  create_project/       # CF Pages project management
   get_project/
-  
-examples/
-  gutenberg.yaml        # Project config
-  landing-page.yaml     # Page specs
-  docs-page.yaml
-  product.yaml
-  rendered/             # Auto-generated
-  
+  list_projects/
+  init_template/
+
 tests/
-  integration/tools.test.ts
+  editify.test.ts           # Edit mode unit tests
+  integration/tools.test.ts # Integration tests (spawns MCP server subprocess)
+  helpers/server.ts, fixtures.ts
 ```
 
----
+## Page Spec Format
 
-## Page Schema Format
+Specs use `title`, `hero`, `blocks` — NOT the old `page.sections` format.
 
 ```yaml
-page:
-  meta:                    # optional — SEO metadata
-    title: My Page
-    description: ...
-    language: en
-    
-  layout:                  # optional — layout type + theme
-    type: standard         # standard | wide | narrow | docs
-    theme: ink             # ink | mono | ocean | light | dark (default: dark)
-    
-  sections:                # required — ordered list of sections
-    - type: navigation
-      variant: default
-      logo: My Logo
-      links: [...]         # Will be auto-injected by build tool
-      
-    - type: hero
-      variant: centered
-      content:
-        heading: Hello World
-        subheading: ...
-        cta: [...]
-      vibe: vibrant        # optional semantic axis
-      intent: engage       # optional semantic axis
-      
-    - type: features
-      variant: grid-3
-      heading: Features
-      items: [...]
-      
-    - type: content
-      variant: prose       # prose | narrow | wide
-      markdown: |
-        # Section heading
-        Content with **markdown**.
-      
-    - type: cta
-      variant: centered    # centered | split | banner
-      heading: Call to Action
-      cta: [...]
-      
-    - type: footer
-      variant: detailed
-      logo: My Logo
-      links: [...]
+title: "Page Title"
+theme: mono                    # optional, inherited from _site.yaml
+
+hero:
+  title: "Heading"
+  subtitle: "Subheading"
+  body: "Description text."
+
+blocks:
+  - section_label:
+      text: SECTION NAME
+
+  - prose:
+      text: "**Markdown** content here."
+      _editable: true          # becomes interactive in edit mode
+
+  - tracker:
+      _editable: true
+      caption: "1 = low · 3 = neutral · 5 = high"
+      cols: 4
+      items:
+        - {label: Mood, value: "3", type: rating, max: 5}
+        - {label: Sleep, value: "", type: text}
+        - {label: Exercise, value: "off", type: toggle}
+
+  - table:
+      headers: [{label: "Col 1"}, {label: "Col 2"}]
+      rows: [["cell a", "cell b"]]
+
+  - calendar:
+      month: 4
+      year: 2026
+      filled: ["2026-04-15", "2026-04-16"]
 ```
 
-### Semantic Axes (all optional, all section types)
+Blocks are discriminated unions: each array item is `{block_type: {config...}}`.
 
-```
-vibe:      serene | gentle | steady | vibrant | intense | urgent
-intent:    engage | inform | persuade | direct
-narrative: exposition | inciting | rising | climax | falling | resolution
-cohesion:  opens | continues | amplifies | supports | contrasts | pivots | echoes | resolves | closes
-```
+## Block Types
 
----
+| Block | Description |
+|---|---|
+| `hero` | Page header with title, subtitle, body |
+| `superhero` | Full-width dramatic header |
+| `prose` | Markdown text content |
+| `table` | Data table with headers and rows |
+| `tracker` | Rating/toggle/text grid (1-5 segmented scale) |
+| `calendar` | Monthly grid with filled/today/future indicators |
+| `cards` | Card grid layout |
+| `stat` | Metric/statistic display |
+| `timeline` | Chronological events |
+| `flow_chain` | Step-by-step process |
+| `info_box` | Highlighted information panel |
+| `callout` | Emphasized message |
+| `heading` | Section heading |
+| `section_label` | Uppercase section divider |
+| `badge` | Status badge |
+| `page_nav` | Navigation links |
+| `closing` | Page footer content |
 
-## Adding a New Tool
+## Edit Mode
 
-1. Create `tools/<tool_name>/` directory
-2. Add `tools/<tool_name>/index.ts` — export async `handler(input: Record<string, unknown>)` function
-3. Add `tools/<tool_name>/schema.json` — `input` and `output` keys with `additionalProperties: false` in input
-4. Add `tools/<tool_name>/purpose.md` — first line is the short MCP description
-5. Run `bun test` — all tests must pass
+Edit mode is first-class — the full rendering pipeline runs unchanged. Block renderers conditionally emit `<input>` / `<textarea>` / `<select>` elements with `gb-edit-field` class that inherits ALL visual styling via CSS `inherit`.
 
-**Tools are automatically discovered by `serve.ts`. No server code changes needed.**
+**Key components:**
 
----
+- **CompileOptions** (`engines/html5.ts`): `editMode`, `editableBlocks`, `editLink`, `deleteLink` flags thread through the render context.
+- **editify.ts** (`pipeline/editify.ts`): `compileEdit(spec, editableBlocks)` orchestrates edit-mode compilation. `findEditableBlocks()` extracts `_editable` markers from raw template YAML.
+- **document.ts**: Wraps output in `<form>` for edit mode. View mode shows a floating action bar with Edit + Delete buttons.
+- **Tracker edit mode**: Hidden radio buttons + CSS `:has()` for live intensity updates — pure CSS, no JavaScript. 1-5 segmented scale where 3 = neutral. Each item uses its own chromata accent color; intensity is driven by deviation from neutral (0.3 at center → 1.0 at extremes). Neutral marker (small tick on segment 3) always visible.
 
-## Adding a New Component
+**Field naming**: `section_{specIndex}__{field}` where `specIndices[]` on CompilePlan maps contentBlocks to `spec.blocks` positions.
 
-1. Create `src/components/<name>.data.ts` — export `extract<Name>Data(section: any)` and `<Name>Data` interface
-2. Create `src/components/<name>.scaffold.ts` — export `scaffold<Name>(data: <Name>Data): RenderNode`
-3. Add the type to `ComponentType` in `src/types.ts`
-4. Add validation in `src/validator.ts` `validateSection()` switch case
-5. Wire into `src/pipeline/scaffold.ts` `scaffoldSection()` switch
-6. Update examples to use the new component
-7. Run `bun test` to verify
+## Library Exports
 
----
+Package exports map provides 8 subpaths with dual resolution (`bun` → source TS, `import` → compiled JS):
 
-## CloudFlare Pages Integration
+| Subpath | Key Exports |
+|---|---|
+| `.` | `compile`, `compileYaml`, `plan`, `fromYaml`, `toYaml`, `wrapDocument`, `createEditHandler` |
+| `./compile` | `compile()` |
+| `./specs/page` | Page spec index |
+| `./specs/page/yaml` | `fromYaml()`, `toYaml()` |
+| `./specs/page/sanitize` | `sanitizeSpec()`, `lintSpec()` |
+| `./specs/page/types` | `PageSpec`, `SpecBlock`, `blockType()`, `blockValue()` |
+| `./pipeline/editify` | `compileEdit()`, `findEditableBlocks()` |
+| `./engines/html5` | HTML5 engine, `CompileOptions` |
+| `./workers` | `createEditHandler()`, `EditHandlerConfig` |
 
-The `publish` tool handles all CF Pages operations:
+## Project Config
 
-**Deploy an entire project:**
-```javascript
-publish(project_path="examples/gutenberg.yaml")
-```
-
-Reads `gutenberg.yaml` → gets `project_name` → deploys `rendered/` → returns live URL.
-
-**Required environment variables** (injected by opencode.json):
-- `CLOUDFLARE_ACCOUNT_ID` — Account ID from dash.cloudflare.com
-- `CLOUDFLARE_API_TOKEN` — API token with Pages write access
-
-**Features:**
-- ✅ Auto-creates project if it doesn't exist
-- ✅ MD5-based asset deduplication (only uploads changed files)
-- ✅ Idempotent — same input always produces same deployment
-- ✅ Preview branches supported via optional `branch` parameter
-- ✅ All pages deployed as one unit (one URL, multiple routes)
-
----
-
-## Edit Mode: Dynamic, Form-Based Pages
-
-Edit mode enables **templates** — reusable structures for dynamic, form-based pages (diaries, blogs, surveys).
-
-### Key Differences: Pages vs Templates
-
-| | Pages | Templates |
-|---|-------|-----------|
-| Location | Project root or `pages/` | `templates/` directory |
-| Built | Yes, to HTML | No, never rendered |
-| Usage | Static, built once | Dynamic, created at runtime |
-| Editing | None | Via web form |
-| Storage | None (static) | R2 entries |
-
-### Template Structure
-
-Templates define **both structure AND editability**:
+Project-level config uses `_site.yaml` (not the old `gutenberg.yaml`):
 
 ```yaml
-template:
-  name: diary
-  route: /diary/[date]
-  routeParam: date
-  storage: r2
-
-page:
-  meta:
-    title: "Diary — {{DATE}}"
-  sections:
-    - type: hero
-      _editable: true    # Make this section editable
-      content:
-        heading: "Daily Card {{DATE}}"
-    
-    - type: table
-      _editable: true    # Users can edit table cells
-      label: EMOTIONS
-      cells: [...]
-    
-    - type: content
-      _editable: true    # Users can edit markdown
-      variant: prose
-      markdown: "## Notes\n..."
+project: my-project
+theme: mono
+targets:
+  - cloudflare-pages
 ```
 
-### Build Pipeline with Templates
+`readProjectConfig()` looks for `_site.yaml` first, then `_project.yaml` (legacy). Does NOT walk up the directory tree.
 
-```
-gutenberg build
-├── Discover pages/ and templates/
-├── Lint pages → rendered/*.lint.json
-├── Build pages → rendered/*.html
-├── Validate templates (but DON'T render them)
-└── Write template metadata → .gutenberg-edit/templates.json
-```
+## Chromata Color Engine
 
-**Important:** `gutenberg build` only renders **pages** to HTML. Templates are validated but never rendered.
+OkLCH-based color system for semantic coloring:
 
-### Initialization
+- **themes.ts**: Theme definitions inlined as JSON (Workers-compatible, no filesystem reads).
+- **Tonal enrichment**: Assigns accent colors to blocks based on semantic sequence position.
+- **Palette generation**: Produces harmonious color sets from a base hue.
+- **Semantic mapping**: Maps abstract semantic roles to concrete color values.
 
-```bash
-# Initialize a new template with route and parameter
-gutenberg init_template diary --route="/diary/[date]" --param=date
+## Key Conventions
 
-# Creates:
-# - templates/diary.yaml (template definition)
-# - functions/diary/[date].ts (Worker handler)
-# - functions/index.ts (index handler)
-# - wrangler.toml (Cloudflare config)
-# - data/diary/ (local storage for dev)
-```
+1. **Page spec format is `title` / `hero` / `blocks`** — never `page.sections`.
+2. **_site.yaml is the project config** — not gutenberg.yaml.
+3. **dist/ is gitignored**. The `prepare` script (`tsc --noEmitOnError || true`) runs on `npm install` to build dist/ from source.
+4. **Version bump required** when downstream projects (like dbt-diary-cards) need to pick up changes. npm caches git dependencies by the `version` field in package.json.
+5. **Mono theme only** currently — vermillion/red accent, Helvetica Neue, strict 8px grid, zero border radius.
+6. **Edit mode is first-class** — same pipeline, block renderers conditionally switch display → input at the leaf level. No separate edit pipeline.
 
-### Runtime: Workers Functions
+## MCP Tool Structure
 
-Templates are rendered dynamically by Cloudflare Pages Functions using Gutenberg utilities:
+Tools live in `tools/<name>/` with three files:
+- `index.ts` — export async `handler(input)` function
+- `schema.json` — input/output types
+- `purpose.md` — first line is the MCP tool description
 
-```typescript
-// functions/diary/[date].ts
-import { createEditHandler } from 'gutenberg/workers';
+`serve.ts` auto-discovers tools from `tools/*/index.ts`. No registration needed.
 
-export async function onRequest(context) {
-  return createEditHandler({
-    templateKey: 'template.yaml',
-    bucket: context.env.DIARY_BUCKET,
-    routeParam: 'date',
-    paramValidator: (d) => /^\d{4}-\d{2}-\d{2}$/.test(d),
-  })(context);
-}
-```
+## Important Rules
 
-The handler:
-- GET `/diary/2026-04-17` → renders entry (view mode)
-- GET `/diary/2026-04-17?mode=edit` → renders form (edit mode)
-- POST `/diary/2026-04-17?mode=save` → saves form data to R2
-
-### Local Development
-
-```bash
-# Build pages (templates ignored)
-gutenberg build
-
-# Start Cloudflare dev server
-wrangler pages dev ./rendered
-
-# Edit entries locally (git-friendly YAML)
-# Stored in data/diary/*.yaml
-```
-
-### For More Details
-
-See `docs/edit-mode.md` for complete edit mode documentation.
-
----
-
-## Important Rules for Agents
-
-1. **Never write ad-hoc scripts** — if a workflow might be repeated, create a tool instead
-2. **CF credentials live in the MCP subprocess** — always call tools via MCP, never import handlers directly
-3. **Rely on convention** — pipeline tools derive all paths automatically, don't pass paths manually
-4. **gutenberg.yaml is the unit of deployment** — use `build` + `publish` for multi-page sites
-5. **Individual pipeline tools are for inspection** — use them when debugging or exploring artifacts
-6. **Templates are separate from pages** — discovered from `templates/` directory, validated but never rendered
-7. **Edit mode uses Workers Functions** — not a separate system, just a different rendering mode
+1. **Never write ad-hoc scripts** — create MCP tools instead (they're discoverable and get proper credentials).
+2. **CF credentials live in the MCP subprocess** — injected by opencode.json. Always call tools via MCP, never by importing handlers directly.
+3. **Only mono theme exists** — don't reference ink, wire, cloudflare, reactor, or other themes.
+4. **Workers edit mode** uses `createEditHandler()` for CF Pages Functions — not a separate system.
